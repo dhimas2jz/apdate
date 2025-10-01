@@ -1,0 +1,62 @@
+services:
+  # PHP & Apache Service
+  web:
+    image: php:7.4-apache
+    container_name: apdate_web
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+    environment:
+      - APACHE_DOCUMENT_ROOT=/var/www/html
+    depends_on:
+      - db
+    networks:
+      - apdate_network
+    command: >
+      bash -c "
+      docker-php-ext-install mysqli pdo pdo_mysql &&
+      a2enmod rewrite &&
+      apache2-foreground
+      "
+
+  # MySQL Service
+  db:
+    image: mysql:8.0
+    container_name: apdate_db
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: apdate
+      MYSQL_USER: apdate_user
+      MYSQL_PASSWORD: apdate_pass
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./DB_APDATE.sql:/docker-entrypoint-initdb.d/DB_APDATE.sql
+    networks:
+      - apdate_network
+
+  # phpMyAdmin Service
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: apdate_phpmyadmin
+    restart: always
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: root
+    depends_on:
+      - db
+    networks:
+      - apdate_network
+
+networks:
+  apdate_network:
+    driver: bridge
+
+volumes:
+  db_data:

@@ -14,7 +14,7 @@ class Reset_Password extends CI_Controller {
             redirect('login_dashboard');
         }
 
-        $this->own_link = admin_url('resetpassword');
+        $this->own_link = admin_url('reset_password');
     }
 
     public function index() {
@@ -40,8 +40,9 @@ class Reset_Password extends CI_Controller {
             $row[] = $field->tahun_ajaran;
             $row[] = !empty($field->kelas) ? $field->kelas : '-';
 
-            // Action buttons
-            $action = '<button type="button" class="btn btn-warning btn-sm" onclick="resetPassword('.$field->id.', \''.$field->nama.'\')">
+            // Action buttons - escape nama untuk menghindari masalah JavaScript
+            $nama_escaped = htmlspecialchars($field->nama, ENT_QUOTES, 'UTF-8');
+            $action = '<button type="button" class="btn btn-warning btn-sm" onclick="resetPassword('.$field->id.', \''.$nama_escaped.'\')">
                         <i class="fa fa-key"></i> Reset Password
                        </button>';
 
@@ -60,15 +61,12 @@ class Reset_Password extends CI_Controller {
     }
 
     public function submit() {
-        header('Content-Type: application/json');
-
         $siswa_id = $this->input->post('siswa_id');
+        $siswa_nama = $this->input->post('siswa_nama');
 
         if (empty($siswa_id)) {
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Siswa ID tidak valid'
-            ]);
+            $this->session->set_flashdata('error', 'Siswa ID tidak valid');
+            redirect($this->own_link);
             return;
         }
 
@@ -76,44 +74,48 @@ class Reset_Password extends CI_Controller {
         $siswa = $this->Siswa_model->findSiswa($siswa_id);
 
         if (empty($siswa)) {
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Data siswa tidak ditemukan'
-            ]);
+            $this->session->set_flashdata('error', 'Data siswa tidak ditemukan');
+            redirect($this->own_link);
             return;
         }
 
-        // Generate default password (NISN)
-        $default_password = $siswa['nisn'];
+        // Generate default password same as create siswa: negrac#ddmmyyyy
+        $default_password = "negrac#" . date('dmY', strtotime($siswa['tanggal_lahir']));
         $hashed_password = password_hash($default_password, PASSWORD_DEFAULT);
 
+        // Get user_id from mt_users_siswa
+        $siswa_detail = $this->Dbhelper->selectTabelOne('users_id', 'mt_users_siswa', array('id' => $siswa_id));
+
+        if (empty($siswa_detail) || empty($siswa_detail['users_id'])) {
+            $this->session->set_flashdata('error', 'User ID tidak ditemukan untuk siswa ini');
+            redirect($this->own_link);
+            return;
+        }
+
+        $users_id = $siswa_detail['users_id'];
+
         // Update password in m_users table
-        $user = $this->Dbhelper->selectTabel('*', 'm_users', array('siswa_id' => $siswa_id));
+        $user = $this->Dbhelper->selectTabel('*', 'm_users', array('id' => $users_id));
 
         if (!empty($user)) {
             $update_data = array(
                 'password' => $hashed_password,
+                'password_raw' => $default_password,
                 'updated_at' => date('Y-m-d H:i:s')
             );
 
-            $result = $this->Dbhelper->updateData('m_users', array('siswa_id' => $siswa_id), $update_data);
+            $result = $this->Dbhelper->updateData('m_users', array('id' => $users_id), $update_data);
 
-            if ($result) {
-                echo json_encode([
-                    'status' => 'success',
-                    'message' => 'Password berhasil direset menjadi NISN: ' . $default_password
-                ]);
+            if ($result !== false) {
+                $this->session->set_flashdata('success', 'Password berhasil direset untuk siswa: ' . $siswa['nama']);
+                $this->session->set_flashdata('password', $default_password);
             } else {
-                echo json_encode([
-                    'status' => 'error',
-                    'message' => 'Gagal mereset password'
-                ]);
+                $this->session->set_flashdata('error', 'Gagal mereset password. Silakan coba lagi');
             }
         } else {
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Akun user tidak ditemukan'
-            ]);
+            $this->session->set_flashdata('error', 'Akun user tidak ditemukan untuk siswa ini');
         }
+
+        redirect($this->own_link);
     }
 }

@@ -30,8 +30,8 @@ class Auth extends CI_Controller {
 
 				$guru = $this->Dbhelper->selectTabelOne('*', 'mt_users_guru', array('users_id' => $user_id));
 
-				// $user_access 		= [];
-				// $user_access_detail	= [];
+				$user_access 		= [];
+				$user_access_detail	= [];
 				// if (count($menu_access) > 0) {
 				// 	foreach ($menu_access as $access) {
 				// 		$menu_id 		= $access['menu_id'];
