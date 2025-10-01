@@ -164,6 +164,9 @@ $route['dashboard'] 								= 'admin/dashboard';
 	$route['dashboard/lms/pertemuan/diskusi-delete'] 				= 'admin/Lms/diskusi_delete';
 	$route['dashboard/lms/pertemuan/modul/(:any)'] 					= 'admin/Lms/modul/$1';
 	$route['dashboard/lms/pertemuan/pranala-luar/(:any)'] 	= 'admin/Lms/pranala_luar/$1';
+
+	$route['dashboard/resetpassword'] = 'admin/master/reset_password/index';
+	$route['dashboard/resetpassword/submit'] = 'admin/master/reset_password/submit';
 /* GENERATE ROUTES */
 
 /* GURU ROUTES */

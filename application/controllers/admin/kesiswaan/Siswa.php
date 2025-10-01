@@ -172,7 +172,7 @@ class Siswa extends CI_Controller {
 			unset($post_data["id"]);
 			$siswa_data 	= $post_data;
 
-			$password = date('Ymd', strtotime($siswa_data["tanggal_lahir"]));
+			$password = "negrac#" . date('dmY', strtotime($siswa_data["tanggal_lahir"]));
 			$users_data 			= [
 				"user_group_id"	=> 3,
 				"username"			=> $siswa_data['nisn'],
