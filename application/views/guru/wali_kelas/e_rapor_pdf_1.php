@@ -64,12 +64,18 @@
 <body>
 
     <div class="page">
-        <br><br>
+        <br>
         <h2>LAPORAN</h2>
         <h2>HASIL PENCAPAIAN KOMPETENSI PESERTA DIDIK</h2>
         <h2>SEKOLAH MENENGAH PERTAMA</h2>
         <h2>(SMP)</h2>
-        <br><br><br>
+				<br>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <img src="<?= base_url('assets/logo-sekolah.jpg') ?>" alt="Logo Sekolah" style="width: 120px; height: auto;">
+        </div>
+			<br>
+			<br>
         <table style="width: 60%; margin: 50px auto; border: none;">
             <tr>
                 <td style="border: none; width: 40%;">Nama Peserta Didik:</td>
@@ -80,7 +86,7 @@
                 <td style="border: 1px solid black; padding: 10px;"><?= $siswa['nomor_induk'].'/'.$siswa['nisn'] ?></td>
             </tr>
         </table>
-        <div style="text-align: center; margin-top: 150px;">
+        <div style="text-align: center; margin-top: 100px;">
             <h3>KEMENTERIAN PENDIDIKAN DAN KEBUDAYAAN</h3>
             <h3>REPUBLIK INDONESIA</h3>
         </div>
