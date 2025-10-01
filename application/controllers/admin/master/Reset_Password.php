@@ -13,16 +13,16 @@ class Reset_Password extends CI_Controller {
         if (empty($session)) {
             redirect('login_dashboard');
         }
+
+        $this->own_link = admin_url('resetpassword');
     }
 
     public function index() {
         $data['judul'] = 'Reset Password Siswa';
-        $data['own_link'] = base_url('dashboard/resetpassword');
+        $data['subjudul'] = 'Daftar Siswa';
+        $data['own_link'] = $this->own_link;
 
-        $this->load->view('admin/layouts/header');
-        $this->load->view('admin/layouts/sidebar');
-        $this->load->view('admin/master/reset_password/index', $data);
-        $this->load->view('admin/layouts/footer');
+        $this->template->_v('master/reset_password/index', $data);
     }
 
     public function datatables() {
