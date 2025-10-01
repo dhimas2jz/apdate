@@ -1,7 +1,15 @@
-<?php
-// $siswa = array biodata siswa
-// $orangtua = array of array data orang tua
-?>
+<?php if ($this->session->flashdata('msg')): ?>
+  <?php $msg = $this->session->flashdata('msg'); ?>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    Swal.fire({
+      icon: '<?= $msg['type'] ?>',
+      title: '<?= ucfirst($msg['type']) ?>',
+      text: '<?= $msg['text'] ?>'
+    });
+  </script>
+<?php endif; ?>
+
 <div class="row">
   <div class="col-md-12">
     <div class="card">

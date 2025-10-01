@@ -36,48 +36,74 @@ class Dashboard extends CI_Controller {
 	}
 
 	public function profil_update() {
-		$session = $this->session->userdata('user_dashboard');
-		if (!$session) {
-			redirect('siswa/login');
-		}
+    $session = $this->session->userdata('user_dashboard');
+    if (!$session) {
+        redirect('siswa/login');
+    }
 
-		$user_id = $session['user']['id'];
+    $user_id = $session['user']['id'];
 
-		// Ambil input dari form
-		$nama = $this->input->post('nama', true);
-		$email = $this->input->post('email', true);
-		$alamat = $this->input->post('alamat', true);
-		$tempat_lahir = $this->input->post('tempat_lahir', true);
-		$tanggal_lahir = $this->input->post('tanggal_lahir', true);
-		$agama = $this->input->post('agama', true);
-		$sekolah_asal = $this->input->post('sekolah_asal', true);
-		$nomor_hp = $this->input->post('nomor_hp', true);
-		$password = $this->input->post('password', true);
+    // Ambil input dari form
+    $nama            = $this->input->post('nama', true);
+    $alamat          = $this->input->post('alamat', true);
+    $tempat_lahir    = $this->input->post('tempat_lahir', true);
+    $tanggal_lahir   = $this->input->post('tanggal_lahir', true);
+    $agama           = $this->input->post('agama', true);
+    $sekolah_asal    = $this->input->post('sekolah_asal', true);
+    $nomor_hp        = $this->input->post('nomor_hp', true);
 
-		// Update mt_users_siswa
-		$data_siswa = [
-			'nama' => $nama,
-			'tempat_lahir' => $tempat_lahir,
-			'tanggal_lahir' => $tanggal_lahir,
-			'agama' => $agama,
-			'sekolah_asal' => $sekolah_asal,
-			'alamat' => $alamat,
-			'nomor_hp' => $nomor_hp
-		];
-		$this->db->where('users_id', $user_id);
-		$this->db->update('mt_users_siswa', $data_siswa);
+    $password_lama        = $this->input->post('password_lama', true);
+    $password_baru        = $this->input->post('password_baru', true);
+    $password_konfirmasi  = $this->input->post('password_konfirmasi', true);
 
-		// Update mt_users (jika password diisi)
-		if (!empty($password)) {
-			$data_user['password'] = password_hash($password, PASSWORD_DEFAULT);
-			$data_user['password_raw'] = $password;
-			$this->db->where('id', $user_id);
-			$this->db->update('m_users', $data_user);
-		}
+    // Update biodata siswa
+    $data_siswa = [
+        'nama'          => $nama,
+        'tempat_lahir'  => $tempat_lahir,
+        'tanggal_lahir' => $tanggal_lahir,
+        'agama'         => $agama,
+        'sekolah_asal'  => $sekolah_asal,
+        'alamat'        => $alamat,
+        'nomor_hp'      => $nomor_hp
+    ];
+    $this->db->where('users_id', $user_id);
+    $this->db->update('mt_users_siswa', $data_siswa);
 
-		$this->session->set_flashdata('success', 'Profil berhasil diperbarui.');
-		redirect('siswa/profil');
-	}
+    // ---- Validasi Password ----
+    if (!empty($password_lama) || !empty($password_baru) || !empty($password_konfirmasi)) {
+        // Ambil data user lama
+        $user = $this->db->get_where('m_users', ['id' => $user_id])->row_array();
+
+        // 1. Cek password lama
+        if (!password_verify($password_lama, $user['password'])) {
+            $this->session->set_flashdata('msg', ['type' => 'error', 'text' => 'Password lama salah!']);
+            redirect('siswa/profil');
+            return;
+        }
+
+        // 2. Cek password baru vs konfirmasi
+        if ($password_baru !== $password_konfirmasi) {
+            $this->session->set_flashdata('msg', ['type' => 'warning', 'text' => 'Password baru dan konfirmasi tidak sama!']);
+            redirect('siswa/profil');
+            return;
+        }
+
+        // 3. Update password baru
+        $data_user = [
+            'password'      => password_hash($password_baru, PASSWORD_DEFAULT),
+            'password_raw'  => $password_baru
+        ];
+        $this->db->where('id', $user_id);
+        $this->db->update('m_users', $data_user);
+
+        $this->session->set_flashdata('msg', ['type' => 'success', 'text' => 'Password berhasil diganti!']);
+        redirect('siswa/profil');
+        return;
+    }
+
+    $this->session->set_flashdata('msg', ['type' => 'success', 'text' => 'Profil berhasil diperbarui!']);
+    redirect('siswa/profil');
+}
 
 	public function aktifitas_lms_index() {
 		
