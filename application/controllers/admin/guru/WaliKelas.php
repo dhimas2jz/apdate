@@ -8,7 +8,8 @@ class WaliKelas extends CI_Controller {
 		$this->load->model('Lms_model');
 		$this->load->model('Penilaian_model');
 		$this->load->model('kesiswaan/Kelas_model');
-		$this->load->model('kesiswaan/Siswa_model');
+	$this->load->model('kesiswaan/Siswa_model');
+	$this->load->model('kesiswaan/Guru_model');
 	}
 
 	public function index($jadwal_id) {
@@ -408,6 +409,14 @@ class WaliKelas extends CI_Controller {
 			$data['ortu_ibu'] = $data['ortu_ayah'];
 		}
 		$data['active_periode'] = $active_periode;
+		// Ambil data wali kelas dari guru_id di kelas siswa
+		$kelas = $this->Kelas_model->find($data['siswa']['kelas_id']);
+		$wali_kelas = $this->Guru_model->find($kelas->guru_id);
+		$data['wali_kelas'] = [
+			'nama_lengkap' => $wali_kelas->nama,
+			'nip' => $wali_kelas->nip
+		];
+
 		// dd($data);
 		$this->load->view('guru/wali_kelas/e_rapor_pdf_'.$active_periode['semester'], $data);
 	}

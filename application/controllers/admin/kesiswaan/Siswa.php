@@ -1,8 +1,10 @@
 <?php
+require_once FCPATH . 'vendor/autoload.php';
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 class Siswa extends CI_Controller {
 	var $menu_id = "";
 	var $session_data = "";
@@ -235,14 +237,15 @@ class Siswa extends CI_Controller {
 	}
 
 	public function import() {
-    if ($this->input->server('REQUEST_METHOD') === 'POST') {
-        if (isset($_FILES['file']) && $_FILES['file']['error'] == UPLOAD_ERR_OK) {
-            $fileTmpPath = $_FILES['file']['tmp_name'];
-            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($fileTmpPath);
-            $sheet = $spreadsheet->getActiveSheet();
+	if ($this->input->server('REQUEST_METHOD') === 'POST') {
+		if (isset($_FILES['file']) && $_FILES['file']['error'] == UPLOAD_ERR_OK) {
+			set_time_limit(600);
+			$fileTmpPath = $_FILES['file']['tmp_name'];
+			$spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($fileTmpPath);
+			$sheet = $spreadsheet->getActiveSheet();
 
-            // 1. Menambahkan kolom orang tua ke $headcol
-            $headcol = [
+			// 1. Menambahkan kolom orang tua ke $headcol
+			$headcol = [
 								"A"	=> "nisn",
                 "B" => "nomor_induk",
                 "C" => "nama",
@@ -273,61 +276,48 @@ class Siswa extends CI_Controller {
 			// dd($active_periode);
             // Memulai iterasi dari baris ke-2 (untuk melewati header)
             foreach ($sheet->getRowIterator() as $i => $row) {
-                if ($i > 1) {
-                    $cellIterator = $row->getCellIterator();
-                    $cellIterator->setIterateOnlyExistingCells(false);
-                    
-                    $rowData = [];
-                    foreach ($cellIterator as $index_headcol => $cell) {
-                        // Hanya proses kolom yang terdefinisi di $headcol
-                        if (isset($headcol[$index_headcol])) {
-                            $value = trim($cell->getValue());
-                            
-                            // Validasi dan pengolahan data siswa (seperti kode Anda)
-                            if ($index_headcol == "A") { // NISN
-                                if (empty($value)) continue 2; // Lewati baris jika NISN kosong
-                                $checkDuplicate = $this->Dbhelper->selectTabelOne('id', 'mt_users_siswa', ["nisn" => $value]);
-                                if ($checkDuplicate) {
-                                    $this->session->set_flashdata('error', "Error: Duplikat data NISN $value.");
-                                    return redirect($this->own_link);
-                                }
-                            }
-							
-                            if ($index_headcol == "E") { // Tanggal Lahir
+				if ($i > 1) {
+					$cellIterator = $row->getCellIterator();
+					$cellIterator->setIterateOnlyExistingCells(false);
+					$rowData = [];
+					foreach ($cellIterator as $index_headcol => $cell) {
+						if (isset($headcol[$index_headcol])) {
+							$value = trim($cell->getValue());
+							if ($index_headcol == "A") { // NISN
+								if (empty($value)) continue 2; // Lewati baris jika NISN kosong
+								$rowData['nisn'] = $value;
+							}
+							if ($index_headcol == "E") { // Tanggal Lahir
 								$timestamp = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToTimestamp($value);
 								$value = date('Y-m-d', $timestamp);
-                            }
-                            // if ($index_headcol == "E") { // Periode
-                            //     if (!isset($periode_list[$value])) {
-                            //         $periode = $this->Dbhelper->selectTabelOne('id, tahun_ajaran', 'mt_periode', ["tahun_ajaran" => $value]);
-                            //         $periode_list[$value] = $periode;
-                            //     }
-                            //     $value = $periode_list[$value]['id'];
-                            // }
-                            // if ($index_headcol == "F") { // Kelas
-                            //     $periode_id = $rowData["join_periode_id"];
-                            //     if (!isset($kelas_list[$periode_id . '-' . $value])) {
-                            //         $kelas = $this->Dbhelper->selectTabelOne('id', 'tref_kelas', ["periode_id" => $periode_id, "kelas" => $value]);
-                            //         $kelas_list[$periode_id . '-' . $value] = $kelas;
-                            //     }
-                            //     $value = $kelas_list[$periode_id . '-' . $value]['id'];
-                            // }
-                            
-                            $rowData[$headcol[$index_headcol]] = $value;
-                        }
-                    }
+							}
+							$rowData[$headcol[$index_headcol]] = $value;
+						}
+					}
+					if (!empty($rowData['nisn'])) {
+						$nisn_list[] = $rowData['nisn'];
+					}
+			// Validasi duplikat NISN sekaligus sebelum insert
+			if (!empty($nisn_list)) {
+				$existing_nisn = $this->db->where_in('nisn', $nisn_list)->get('mt_users_siswa')->result_array();
+				if (!empty($existing_nisn)) {
+					$duplikat = array_column($existing_nisn, 'nisn');
+					$this->session->set_flashdata('error', 'Error: Duplikat data NISN: ' . implode(', ', $duplikat));
+					return redirect($this->own_link);
+				}
+			}
 
                     // Menyiapkan data untuk tabel m_users
-                    $password_raw = date('Ymd', strtotime($rowData['tanggal_lahir']));
-                    $rowsUsersData[] = [
-                        "user_group_id" => 3, // Asumsi group_id siswa adalah 3
-                        "username"      => $rowData["nisn"],
-                        "name"          => $rowData["nama"],
-                        "password"      => password_hash($password_raw, PASSWORD_DEFAULT),
-                        "password_raw"  => $password_raw,
-                        "created_at"    => date('Y-m-d H:i:s'),
-                        "updated_at"    => date('Y-m-d H:i:s'),
-                    ];
+					$password_raw = 'negrac#' . date('dmY', strtotime($rowData['tanggal_lahir']));
+					$rowsUsersData[] = [
+						"user_group_id" => 3, // Asumsi group_id siswa adalah 3
+						"username"      => $rowData["nisn"],
+						"name"          => $rowData["nama"],
+						"password"      => password_hash($password_raw, PASSWORD_DEFAULT),
+						"password_raw"  => $password_raw,
+						"created_at"    => date('Y-m-d H:i:s'),
+						"updated_at"    => date('Y-m-d H:i:s'),
+					];
 
 					$rowSiswa = $rowData;
                     // Menyimpan data siswa dan orang tua dengan key NISN untuk relasi nanti

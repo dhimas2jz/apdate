@@ -201,7 +201,9 @@ class Guru extends CI_Controller {
 			unset($post_data["id"]);
 			$guru_data 	= $post_data;
 
-			$password = date('Ymd', strtotime($guru_data["nomor_hp"]));
+			// Password format: guru#6digit_terakhir_nip
+			$nip_last6 = substr($guru_data['nip'], -6);
+			$password = 'guru#' . $nip_last6;
 			$users_data 			= [
 				"user_group_id"	=> 2,
 				"username"			=> $guru_data['nip'],
@@ -337,8 +339,9 @@ class Guru extends CI_Controller {
 						}
 
 						// 2. Menyiapkan data untuk tabel m_users
-						// Password default diambil dari tanggal lahir (Format: Ymd)
-						$password_raw = date('Ymd', strtotime($rowData['tanggal_lahir']));
+						// Password format: guru#6digit_terakhir_nip
+						$nip_last6 = substr($rowData['nip'], -6);
+						$password_raw = 'guru#' . $nip_last6;
 						$rowsUsersData[] = [
 							"user_group_id" => 2, // Asumsi group_id guru adalah 2
 							"username"      => $rowData["nip"],

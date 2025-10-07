@@ -39,35 +39,66 @@ class Dashboard extends CI_Controller {
 		$user_id = $session['user']['id'];
 		// Ambil input dari form profil guru
 		$nip = $this->input->post('nip', true);
-		$nuptk = $this->input->post('nuptk', true);
+		$gelar_depan = $this->input->post('gelar_depan', true);
+		$nama = $this->input->post('nama', true);
+		$gelar_belakang = $this->input->post('gelar_belakang', true);
 		$jenis_kelamin = $this->input->post('jenis_kelamin', true);
-		$pendidikan = $this->input->post('pendidikan', true);
-		$jabatan = $this->input->post('jabatan', true);
+		$tempat_lahir = $this->input->post('tempat_lahir', true);
+		$tanggal_lahir = $this->input->post('tanggal_lahir', true);
+		$agama = $this->input->post('agama', true);
+		$email = $this->input->post('email', true);
+		$nomor_hp = $this->input->post('nomor_hp', true);
+		$alamat = $this->input->post('alamat', true);
+		$asal_universitas = $this->input->post('asal_universitas', true);
+		$password_lama = $this->input->post('password_lama', true);
+		$password_baru = $this->input->post('password_baru', true);
+		$password_konfirmasi = $this->input->post('password_konfirmasi', true);
+
+		// Validasi
+		$errors = [];
+		if (empty($nama)) $errors[] = 'Nama wajib diisi.';
+		if (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Format email tidak valid.';
+		if (!empty($nomor_hp) && !preg_match('/^[0-9]+$/', $nomor_hp)) $errors[] = 'Nomor HP hanya boleh angka.';
+		if (!empty($password_baru) && $password_baru !== $password_konfirmasi) $errors[] = 'Konfirmasi password tidak sama.';
+		if (!empty($password_baru) && strlen($password_baru) < 6) $errors[] = 'Password minimal 6 karakter.';
+
+		if (!empty($errors)) {
+			$this->session->set_flashdata('error', implode('<br>', $errors));
+			redirect('guru/profil');
+			return;
+		}
 
 		// Update mt_users_guru
 		$data_guru = [
-			'jenis_kelamin' => $jenis_kelamin,
-			'pendidikan' => $pendidikan,
-			'jabatan' => $jabatan,
+			'gelar_depan' => $gelar_depan,
 			'nama' => $nama,
+			'gelar_belakang' => $gelar_belakang,
+			'jenis_kelamin' => $jenis_kelamin,
 			'tempat_lahir' => $tempat_lahir,
 			'tanggal_lahir' => $tanggal_lahir,
 			'agama' => $agama,
 			'alamat' => $alamat,
 			'nomor_hp' => $nomor_hp,
-			'email' => $email
+			'email' => $email,
+			'asal_universitas' => $asal_universitas
 		];
 		$this->db->where('users_id', $user_id);
 		$this->db->update('mt_users_guru', $data_guru);
 
 		// Update m_users (jika password diisi)
-		if (!empty($password)) {
-			$data_user['password'] = password_hash($password, PASSWORD_DEFAULT);
-			$data_user['password_raw'] = $password;
+		if (!empty($password_baru)) {
+			// Validasi password lama
+			$user = $this->db->get_where('m_users', ['id' => $user_id])->row_array();
+			if (!password_verify($password_lama, $user['password'])) {
+				$this->session->set_flashdata('error', 'Password lama salah.');
+				redirect('guru/profil');
+				return;
+			}
+			$data_user['password'] = password_hash($password_baru, PASSWORD_DEFAULT);
+			$data_user['password_raw'] = $password_baru;
 			$this->db->where('id', $user_id);
 			$this->db->update('m_users', $data_user);
 		}
-		
 
 		$this->session->set_flashdata('success', 'Profil berhasil diperbarui.');
 		redirect('guru/profil');
