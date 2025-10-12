@@ -140,6 +140,6 @@
     <div class="container-fluid">
       <?php if ($this->session->flashdata('alert')): ?>
         <div class="alert alert-danger" role="alert">
-          <?php echo $this->session->flashdata('alert') ?>
+          <?php echo $this->session->flashdata('alert'); $this->session->set_flashdata('alert', NULL); ?>
         </div>
       <?php endif ?>

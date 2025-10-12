@@ -65,10 +65,13 @@ class Profile extends CI_Controller {
 			$save = $this->Dbhelper->updateData($this->table, array('id'=>$id), $post_data);
 			if ($save) {
 				$this->session->set_flashdata('success', "Update data success");
+				$this->session->set_flashdata('alert', NULL);
+				return redirect($this->own_link);
+			} else {
+				$this->session->set_flashdata('error', "Update data failed");
+				$this->session->set_flashdata('alert', NULL);
 				return redirect($this->own_link);
 			}
-			$this->session->set_flashdata('error', "Update data failed");
-			return redirect($this->own_link);
 		}
 		$this->session->set_flashdata('error', "Access denied");
         return redirect($this->own_link);
