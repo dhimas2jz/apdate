@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>APDATE | Login Guru</title>
+    <link rel="icon" type="image/jpg" href="<?php echo base_url() ?>/assets/logo-sekolah.jpg">
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="icon" type="image/png" href="<?php echo base_url() ?>/assets/logo-sekolah.png">
@@ -35,7 +36,7 @@
         }
 
         .login-card-img {
-            background-image: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2070&auto=format&fit=crop'); /* Ganti dengan URL gambar Anda */
+            background-image: url('<?php echo base_url() ?>/assets/img/img1.png');
             background-size: cover;
             background-position: center;
             border-top-left-radius: 1rem;
@@ -88,9 +89,10 @@
 
                       <?php if ($this->session->flashdata('alert')): ?>
                         <div class="alert alert-danger" role="alert">
-                          <?php echo $this->session->flashdata('alert') ?>
+                          <?php echo $this->session->flashdata('alert'); $this->session->set_flashdata('alert', NULL);?>
                         </div>
                       <?php endif ?>
+
                       <div class="text-center mb-4">
                           <img src="<?php echo base_url() ?>/assets/dist/images/logo.jpg" alt="Logo Sekolah" class="mb-3" style="width: 80px;">
                           <h4 class="fw-bold">APDATE</h4>

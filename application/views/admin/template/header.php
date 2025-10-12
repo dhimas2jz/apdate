@@ -22,6 +22,7 @@
   <link rel="stylesheet" href="<?php echo base_url() ?>/assets/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
   <link rel="stylesheet" href="<?php echo base_url() ?>/assets/plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
   <link rel="stylesheet" href="<?php echo base_url() ?>/assets/dist/css/custom.css">
+  <link rel="icon" type="image/jpg" href="<?php echo base_url() ?>/assets/logo-sekolah.jpg">
 
   <style type="text/css">
     .normal-weight {

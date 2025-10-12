@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
+<link rel="icon" type="image/jpg" href="<?php echo base_url() ?>/assets/logo-sekolah.jpg">
     <style>
         /* CSS Kustom untuk Halaman Login */
         body.login-page {
@@ -35,7 +35,7 @@
         }
 
         .login-card-img {
-            background-image: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2070&auto=format&fit=crop'); /* Ganti dengan URL gambar Anda */
+            background-image: url('<?php echo base_url() ?>/assets/img/img3.png');
             background-size: cover;
             background-position: center;
             border-top-left-radius: 1rem;
@@ -88,9 +88,10 @@
 
                       <?php if ($this->session->flashdata('alert')): ?>
                         <div class="alert alert-danger" role="alert">
-                          <?php echo $this->session->flashdata('alert') ?>
+                          <?php echo $this->session->flashdata('alert'); $this->session->set_flashdata('alert', NULL);?>
                         </div>
                       <?php endif ?>
+
                       <div class="text-center mb-4">
                           <img src="<?php echo base_url() ?>/assets/dist/images/logo.jpg" alt="Logo Sekolah" class="mb-3" style="width: 80px;">
                           <h4 class="fw-bold">APDATE</h4>

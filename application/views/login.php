@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="<?php echo base_url() ?>/assets/plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css">
     <link rel="stylesheet" href="<?php echo base_url() ?>assets/dist/css/adminlte.min.css">
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+    <link rel="icon" type="image/jpg" href="<?php echo base_url() ?>/assets/logo-sekolah.jpg">
   </head>
   <body class="hold-transition login-page">
     <div class="login-box">
