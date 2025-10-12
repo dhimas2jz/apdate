@@ -77,7 +77,6 @@
                 <br>
                 <br>
                 <br>
-                <br>
 
         <div style="text-align: center; margin-top: 30px;">
             <img src="<?= base_url('assets/logo-sekolah.jpg') ?>" alt="Logo Sekolah" style="width: 160px; height: auto;">
@@ -85,7 +84,6 @@
 			<br>
 			<br>
 
-            <br>
             <br>
             <br>
             <br>
@@ -158,7 +156,7 @@
         <table class="signature-table">
              <tr>
                 <td style="width: 50%;"><div style="width: 90px; height: 120px; border: 1px solid black; margin: auto; text-align:center; line-height: 120px;">Pas Foto 3x4</div></td>
-                <td style="width: 50%;"><p>Mengetahui,</p><p>Kepala Sekolah</p><br><br><br><br><p class="font-bold"><u>Drs. BAYU URIP SETIAWATI, MM., Pd</u></p><p>NIP. 197002121995122004</p></td>
+                <td style="width: 50%;"><p>Mengetahui,</p><p>Kepala Sekolah</p><br><br><br><br><p class="font-bold"><u>Siti Hodijah, S.H., M.Pd.</u></p><p>NIP. 197509192008012004</p></td>
             </tr>
         </table>
     </div>
