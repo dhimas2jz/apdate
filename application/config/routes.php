@@ -168,6 +168,10 @@ $route['dashboard'] 								= 'admin/dashboard';
 	$route['dashboard/reset_password'] = 'admin/master/Reset_Password/index';
 	$route['dashboard/reset_password/datatables'] = 'admin/master/Reset_Password/datatables';
 	$route['dashboard/reset_password/submit'] = 'admin/master/Reset_Password/submit';
+
+	$route['dashboard/reset_password_guru'] = 'admin/master/Reset_Password_Guru/index';
+	$route['dashboard/reset_password_guru/datatables'] = 'admin/master/Reset_Password_Guru/datatables';
+	$route['dashboard/reset_password_guru/submit'] = 'admin/master/Reset_Password_Guru/submit';
 /* GENERATE ROUTES */
 
 /* GURU ROUTES */
