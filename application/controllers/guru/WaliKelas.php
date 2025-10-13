@@ -431,8 +431,8 @@ class WaliKelas extends CI_Controller {
 			];
 		}
 
-		// Ambil data kepala sekolah
-		$data['kepala_sekolah'] = $this->Dbhelper->selectTabelOne('*', 'mt_kepala_sekolah', ['periode_id' => $active_periode['periode_id'], 'is_active' => 1]);
+		// Ambil data kepala sekolah berdasarkan periode rapor (bukan periode aktif saat ini)
+		$data['kepala_sekolah'] = $this->Dbhelper->selectTabelOne('*', 'mt_kepala_sekolah', ['periode_id' => $rapor['periode_id'], 'is_active' => 1]);
 		if (empty($data['kepala_sekolah'])) {
 			// Fallback
 			$data['kepala_sekolah'] = [

@@ -194,8 +194,8 @@
                             <tr>
                                 <td class="text-center"><?= $no ?></td>
                                 <td><?= $ekskul ?></td>
-                                <td class="text-center">Baik</td>
-                                <td class="small-text">Aktif mengikuti kegiatan ekstrakulikuler</td>
+                                <td class="text-center"></td>
+                                <td class="small-text"></td>
                             </tr>
                         <?php $no++; endforeach ?>
                     <?php else: ?>

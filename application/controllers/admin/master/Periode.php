@@ -88,9 +88,13 @@ class Periode extends CI_Controller {
 			return redirect($this->own_link);
 		}
 
-		$tingkat_kelas = $this->Dbhelper->selectTabel('id, code, name', 'mt_tingkat_kelas', array("deleted_at" => NULL), 'code', 'ASC');	
+		$tingkat_kelas = $this->Dbhelper->selectTabel('id, code, name', 'mt_tingkat_kelas', array("deleted_at" => NULL), 'code', 'ASC');
 		$mata_pelajaran = $this->Periode_model->find_mapel_guru();
 		$model_mapel = $this->Periode_model->find_mapel($id, true);
+
+		// Ambil data kepala sekolah untuk periode ini
+		$kepala_sekolah = $this->db->get_where('mt_kepala_sekolah', ['periode_id' => $id])->row();
+
 		$data['judul'] 			= $this->judul;
 		$data['subjudul'] 		= 'Edit Data';
 		$data['own_link'] 		= $this->own_link;
@@ -100,6 +104,7 @@ class Periode extends CI_Controller {
 		$data['model_mapel']			= $model_mapel;
 		$data['tingkat_kelas'] = $tingkat_kelas;
 		$data['mata_pelajaran'] = $mata_pelajaran;
+		$data['kepala_sekolah'] = $kepala_sekolah;
 		$data['action']			= "do_update";
 
 		// dd($data);
@@ -140,7 +145,16 @@ class Periode extends CI_Controller {
 
 			// $post_data["updated_at"] = date("Y-m-d H:i:s");
 			unset($post_data["id"]);
-			if ($post_data['is_active'] == 1) {
+
+			// Exclude field kepala sekolah dari update mt_periode
+			unset($post_data["kepala_sekolah_nama"]);
+			unset($post_data["kepala_sekolah_nip"]);
+			unset($post_data["kepala_sekolah_gelar_depan"]);
+			unset($post_data["kepala_sekolah_gelar_belakang"]);
+			unset($post_data["kepala_sekolah_tanggal_mulai"]);
+			unset($post_data["kepala_sekolah_tanggal_selesai"]);
+
+			if (isset($post_data['is_active']) && $post_data['is_active'] == 1) {
 				$update_all = [
 					"is_active" => 0
 				];
@@ -170,6 +184,30 @@ class Periode extends CI_Controller {
 			}
 
 			$save = $this->Dbhelper->updateData($this->table, array('id'=>$id), $post_data);
+
+			// Update atau insert data kepala sekolah
+			$kepala_sekolah_data = [
+				'periode_id' => $id,
+				'nama_lengkap' => $this->input->post('kepala_sekolah_nama', true),
+				'nip' => $this->input->post('kepala_sekolah_nip', true),
+				'gelar_depan' => $this->input->post('kepala_sekolah_gelar_depan', true),
+				'gelar_belakang' => $this->input->post('kepala_sekolah_gelar_belakang', true),
+				'tanggal_mulai' => $this->input->post('kepala_sekolah_tanggal_mulai', true),
+				'tanggal_selesai' => $this->input->post('kepala_sekolah_tanggal_selesai', true),
+				'is_active' => 1
+			];
+
+			// Cek apakah sudah ada data kepala sekolah untuk periode ini
+			$existing_kepala = $this->db->get_where('mt_kepala_sekolah', ['periode_id' => $id])->row();
+			if ($existing_kepala) {
+				// Update
+				$this->db->where('periode_id', $id);
+				$this->db->update('mt_kepala_sekolah', $kepala_sekolah_data);
+			} else {
+				// Insert
+				$this->db->insert('mt_kepala_sekolah', $kepala_sekolah_data);
+			}
+
 			if ($save) {
 				$this->session->set_flashdata('success', "Update data success");
 				return redirect($this->own_link."/edit/".$id);
@@ -224,6 +262,20 @@ class Periode extends CI_Controller {
 				]
 			];
 			$save = $this->db->insert_batch('mt_periode_semester', $post_semester);
+
+			// Insert data kepala sekolah untuk periode ini
+			$kepala_sekolah_data = [
+				'periode_id' => $periode_id,
+				'nama_lengkap' => $this->input->post('kepala_sekolah_nama', true),
+				'nip' => $this->input->post('kepala_sekolah_nip', true),
+				'gelar_depan' => $this->input->post('kepala_sekolah_gelar_depan', true),
+				'gelar_belakang' => $this->input->post('kepala_sekolah_gelar_belakang', true),
+				'tanggal_mulai' => $this->input->post('kepala_sekolah_tanggal_mulai', true),
+				'tanggal_selesai' => $this->input->post('kepala_sekolah_tanggal_selesai', true),
+				'is_active' => 1
+			];
+			$this->db->insert('mt_kepala_sekolah', $kepala_sekolah_data);
+
 			if ($save) {
 				$this->session->set_flashdata('success', "Create data success");
 				return redirect($this->own_link);

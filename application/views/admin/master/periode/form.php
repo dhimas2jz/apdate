@@ -18,8 +18,53 @@
             <label for="inputEmail3" class="col-lg-2 col-sm-12 col-form-label">Tahun Ajaran</label>
             <div class="col-lg-10 col-sm-12">
               <input type="text" name="tahun_ajaran" class="form-control" autocomplete="off" value="<?php echo isset($model)?$model->tahun_ajaran:""; ?>" required>
+              <small class="text-muted">Contoh: 2023/2024</small>
             </div>
           </div>
+
+          <hr>
+          <h5>Data Kepala Sekolah untuk Periode Ini</h5>
+          <div class="form-group row">
+            <label for="kepala_sekolah_nama" class="col-lg-2 col-sm-12 col-form-label">Nama Lengkap <span class="text-danger">*</span></label>
+            <div class="col-lg-10 col-sm-12">
+              <input type="text" name="kepala_sekolah_nama" class="form-control" autocomplete="off" value="<?php echo isset($kepala_sekolah)?$kepala_sekolah->nama_lengkap:""; ?>" required>
+            </div>
+          </div>
+          <div class="form-group row">
+            <label for="kepala_sekolah_nip" class="col-lg-2 col-sm-12 col-form-label">NIP <span class="text-danger">*</span></label>
+            <div class="col-lg-10 col-sm-12">
+              <input type="text" name="kepala_sekolah_nip" class="form-control" autocomplete="off" value="<?php echo isset($kepala_sekolah)?$kepala_sekolah->nip:""; ?>" required>
+            </div>
+          </div>
+          <div class="form-group row">
+            <label for="kepala_sekolah_gelar_depan" class="col-lg-2 col-sm-12 col-form-label">Gelar Depan</label>
+            <div class="col-lg-10 col-sm-12">
+              <input type="text" name="kepala_sekolah_gelar_depan" class="form-control" autocomplete="off" value="<?php echo isset($kepala_sekolah)?$kepala_sekolah->gelar_depan:""; ?>" placeholder="Contoh: Dr.">
+              <small class="text-muted">Kosongkan jika tidak ada</small>
+            </div>
+          </div>
+          <div class="form-group row">
+            <label for="kepala_sekolah_gelar_belakang" class="col-lg-2 col-sm-12 col-form-label">Gelar Belakang</label>
+            <div class="col-lg-10 col-sm-12">
+              <input type="text" name="kepala_sekolah_gelar_belakang" class="form-control" autocomplete="off" value="<?php echo isset($kepala_sekolah)?$kepala_sekolah->gelar_belakang:""; ?>" placeholder="Contoh: S.Pd., M.Pd.">
+              <small class="text-muted">Kosongkan jika tidak ada</small>
+            </div>
+          </div>
+          <div class="form-group row">
+            <label for="kepala_sekolah_tanggal_mulai" class="col-lg-2 col-sm-12 col-form-label">Tanggal Mulai Jabatan</label>
+            <div class="col-lg-10 col-sm-12">
+              <input type="date" name="kepala_sekolah_tanggal_mulai" class="form-control" value="<?php echo isset($kepala_sekolah)?$kepala_sekolah->tanggal_mulai:""; ?>">
+            </div>
+          </div>
+          <div class="form-group row">
+            <label for="kepala_sekolah_tanggal_selesai" class="col-lg-2 col-sm-12 col-form-label">Tanggal Selesai Jabatan</label>
+            <div class="col-lg-10 col-sm-12">
+              <input type="date" name="kepala_sekolah_tanggal_selesai" class="form-control" value="<?php echo isset($kepala_sekolah)?$kepala_sekolah->tanggal_selesai:""; ?>">
+              <small class="text-muted">Kosongkan jika masih menjabat</small>
+            </div>
+          </div>
+          <hr>
+
           <?php if(isset($model)): ?>
             <?php foreach ($tingkat_kelas as $tk): ?>
               <div class="form-group row">
