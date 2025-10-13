@@ -208,5 +208,30 @@
 			$result = $this->db->query($query, [$id])->row_array();
 			return $result;
 		}
+
+		public function getAbsensiSiswa($siswa_id, $kelas_id, $semester_id) {
+			$query = "
+				SELECT
+					SUM(CASE WHEN a.status_kehadiran = 'sakit' THEN 1 ELSE 0 END) as sakit,
+					SUM(CASE WHEN a.status_kehadiran = 'izin' THEN 1 ELSE 0 END) as izin,
+					SUM(CASE WHEN a.status_kehadiran = 'tanpa_keterangan' THEN 1 ELSE 0 END) as alpha
+				FROM
+					tref_pertemuan_absensi AS a
+				INNER JOIN
+					tref_kelas_jadwal_pelajaran AS b ON a.jadwal_kelas_id = b.id
+				WHERE
+					a.siswa_id = ? AND
+					b.kelas_id = ? AND
+					b.semester_id = ?
+			";
+			$result = $this->db->query($query, [$siswa_id, $kelas_id, $semester_id])->row_array();
+
+			// Default 0 jika null
+			return [
+				'sakit' => $result['sakit'] ?? 0,
+				'izin' => $result['izin'] ?? 0,
+				'alpha' => $result['alpha'] ?? 0
+			];
+		}
 	}
 ?>

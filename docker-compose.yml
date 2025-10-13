@@ -17,6 +17,10 @@ services:
       bash -c "
       docker-php-ext-install mysqli pdo pdo_mysql &&
       a2enmod rewrite &&
+      cp /var/www/html/application/config/database_docker.php /var/www/html/application/config/database.php &&
+      chown -R www-data:www-data /var/www/html/application/cache &&
+      chown -R www-data:www-data /var/www/html/application/logs &&
+      chown -R www-data:www-data /var/www/html/upload &&
       apache2-foreground
       "
 
@@ -34,7 +38,8 @@ services:
       MYSQL_PASSWORD: apdate_pass
     volumes:
       - db_data:/var/lib/mysql
-      - ./DB_APDATE.sql:/docker-entrypoint-initdb.d/DB_APDATE.sql
+      - ./DB_APDATE.sql:/docker-entrypoint-initdb.d/01_DB_APDATE.sql
+      - ./DB_FIX_ERAPOR.sql:/docker-entrypoint-initdb.d/02_DB_FIX_ERAPOR.sql
     networks:
       - apdate_network
 

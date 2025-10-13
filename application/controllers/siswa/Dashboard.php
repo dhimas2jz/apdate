@@ -48,8 +48,13 @@ class Dashboard extends CI_Controller {
     $alamat          = $this->input->post('alamat', true);
     $tempat_lahir    = $this->input->post('tempat_lahir', true);
     $tanggal_lahir   = $this->input->post('tanggal_lahir', true);
+    $jenis_kelamin   = $this->input->post('jenis_kelamin', true);
     $agama           = $this->input->post('agama', true);
+    $status_keluarga = $this->input->post('status_keluarga', true);
+    $anak_ke         = $this->input->post('anak_ke', true);
     $sekolah_asal    = $this->input->post('sekolah_asal', true);
+    $tanggal_diterima = $this->input->post('tanggal_diterima', true);
+    $kelas_diterima  = $this->input->post('kelas_diterima', true);
     $nomor_hp        = $this->input->post('nomor_hp', true);
 
     $password_lama        = $this->input->post('password_lama', true);
@@ -58,13 +63,18 @@ class Dashboard extends CI_Controller {
 
     // Update biodata siswa
     $data_siswa = [
-        'nama'          => $nama,
-        'tempat_lahir'  => $tempat_lahir,
-        'tanggal_lahir' => $tanggal_lahir,
-        'agama'         => $agama,
-        'sekolah_asal'  => $sekolah_asal,
-        'alamat'        => $alamat,
-        'nomor_hp'      => $nomor_hp
+        'nama'             => $nama,
+        'tempat_lahir'     => $tempat_lahir,
+        'tanggal_lahir'    => $tanggal_lahir,
+        'jenis_kelamin'    => $jenis_kelamin,
+        'agama'            => $agama,
+        'status_keluarga'  => $status_keluarga,
+        'anak_ke'          => $anak_ke,
+        'sekolah_asal'     => $sekolah_asal,
+        'tanggal_diterima' => !empty($tanggal_diterima) ? $tanggal_diterima : NULL,
+        'kelas_diterima'   => $kelas_diterima,
+        'alamat'           => $alamat,
+        'nomor_hp'         => $nomor_hp
     ];
     $this->db->where('users_id', $user_id);
     $this->db->update('mt_users_siswa', $data_siswa);

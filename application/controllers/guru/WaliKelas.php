@@ -394,7 +394,7 @@ class WaliKelas extends CI_Controller {
 	public function erapor_pdf($rapor_id) {
 		$session = $this->session->userdata('user_dashboard');
 		$active_periode = active_periode();
-		
+
 		$rapor = $this->Dbhelper->selectTabelOne('*', 'tr_rapor', ['id' => $rapor_id]);
 		if (empty($rapor)) {
 			$this->session->set_flashdata('error', "Data rapor tidak ditemukan");
@@ -403,15 +403,49 @@ class WaliKelas extends CI_Controller {
 
 		$data['rapor']			= $rapor;
 		$data['siswa'] 			= $this->Siswa_model->findSiswa($rapor['siswa_id']);
-		$data['ortu_ayah'] 			= $this->Dbhelper->selectTabelOne("*", "mt_users_siswa_orangtua", ["hubungan_keluarga" => "Ayah", "users_id" => $data['siswa']['users_id']]);
-		$data['ortu_ibu'] 			= $this->Dbhelper->selectTabelOne("*", "mt_users_siswa_orangtua", ["hubungan_keluarga" => "Ibu", "users_id" => $data['siswa']['users_id']]);
+		$data['ortu_ayah'] 		= $this->Dbhelper->selectTabelOne("*", "mt_users_siswa_orangtua", ["hubungan_keluarga" => "Ayah", "users_id" => $data['siswa']['users_id']]);
+		$data['ortu_ibu'] 		= $this->Dbhelper->selectTabelOne("*", "mt_users_siswa_orangtua", ["hubungan_keluarga" => "Ibu", "users_id" => $data['siswa']['users_id']]);
 		if (empty($data['ortu_ibu'])) {
 			$data['ortu_ibu'] = $data['ortu_ayah'];
 		}
 		$data['active_periode'] = $active_periode;
+
+		// Ambil data sekolah
+		$data['sekolah'] = $this->Dbhelper->selectTabelOne('*', 'mt_sekolah', ['is_active' => 1]);
+		if (empty($data['sekolah'])) {
+			// Fallback ke hardcoded jika belum ada data
+			$data['sekolah'] = [
+				'nama_sekolah' => 'SMP NEGERI 1 RANCABUNGUR',
+				'npsn' => '20200659',
+				'nis' => '2010202343390',
+				'alamat_lengkap' => 'Jalan Letkol Atang Senjaja, Desa Pasirgaok',
+				'kode_pos' => '16310',
+				'telepon' => '(0251) 8423707',
+				'kelurahan' => 'Pasirgaok',
+				'kecamatan' => 'Rancabungur',
+				'kabupaten_kota' => 'Bogor',
+				'provinsi' => 'Jawa Barat',
+				'website' => 'http://smpn1rancabungur.sch.id',
+				'email' => 'smpn1rancabungur@gmail.com',
+				'logo_path' => 'assets/logo-sekolah.jpg'
+			];
+		}
+
+		// Ambil data kepala sekolah
+		$data['kepala_sekolah'] = $this->Dbhelper->selectTabelOne('*', 'mt_kepala_sekolah', ['periode_id' => $active_periode['periode_id'], 'is_active' => 1]);
+		if (empty($data['kepala_sekolah'])) {
+			// Fallback
+			$data['kepala_sekolah'] = [
+				'nama_lengkap' => 'Siti Hodijah',
+				'nip' => '197509192008012004',
+				'gelar_depan' => '',
+				'gelar_belakang' => 'S.H., M.Pd.'
+			];
+		}
+
 		// Ambil data wali kelas dari guru_id di kelas siswa
-	$kelas_id = isset($data['siswa']['current_kelas_id']) ? $data['siswa']['current_kelas_id'] : null;
-	$kelas = $kelas_id ? $this->Kelas_model->find($kelas_id) : null;
+		$kelas_id = isset($data['siswa']['current_kelas_id']) ? $data['siswa']['current_kelas_id'] : null;
+		$kelas = $kelas_id ? $this->Kelas_model->find($kelas_id) : null;
 		$wali_kelas = null;
 		if ($kelas && isset($kelas->guru_id)) {
 			$wali_kelas_obj = $this->Guru_model->find($kelas->guru_id);
@@ -423,7 +457,20 @@ class WaliKelas extends CI_Controller {
 			}
 		}
 		$data['wali_kelas'] = $wali_kelas;
-		// dd($data);
+
+		// Ambil setting rapor
+		$kkm = $this->Dbhelper->selectTabelOne('value', 'mt_setting_rapor', ['code' => 'kkm_default']);
+		$data['kkm'] = !empty($kkm) ? $kkm['value'] : '72';
+
+		$kota = $this->Dbhelper->selectTabelOne('value', 'mt_setting_rapor', ['code' => 'kota_tandatangan']);
+		$data['kota_tandatangan'] = !empty($kota) ? $kota['value'] : 'Bogor';
+
+		// Hitung absensi siswa
+		$data['absensi'] = $this->Penilaian_model->getAbsensiSiswa($rapor['siswa_id'], $rapor['kelas_id'], $rapor['semester_id']);
+
+		// Ambil data ekstrakulikuler
+		$data['ekstrakulikuler'] = $this->Dbhelper->selectTabelOne('*', 'tref_kelas_siswa_ekskul', ['kelas_id' => $rapor['kelas_id'], 'siswa_id' => $rapor['siswa_id']]);
+
 		$this->load->view('guru/wali_kelas/e_rapor_pdf_'.$active_periode['semester'], $data);
 	}
 

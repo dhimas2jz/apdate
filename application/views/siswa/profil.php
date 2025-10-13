@@ -39,12 +39,41 @@
             <input type="date" class="form-control" id="tanggal_lahir" name="tanggal_lahir" value="<?= isset($siswa['tanggal_lahir']) ? htmlspecialchars($siswa['tanggal_lahir']) : '' ?>">
           </div>
           <div class="form-group">
+            <label for="jenis_kelamin">Jenis Kelamin</label>
+            <select class="form-control" id="jenis_kelamin" name="jenis_kelamin" required>
+              <option value="">-- Pilih Jenis Kelamin --</option>
+              <option value="Laki-laki" <?= (isset($siswa['jenis_kelamin']) && $siswa['jenis_kelamin'] == 'Laki-laki') ? 'selected' : '' ?>>Laki-laki</option>
+              <option value="Perempuan" <?= (isset($siswa['jenis_kelamin']) && $siswa['jenis_kelamin'] == 'Perempuan') ? 'selected' : '' ?>>Perempuan</option>
+            </select>
+          </div>
+          <div class="form-group">
             <label for="agama">Agama</label>
             <input pattern="[A-Za-z\s]+" type="text" class="form-control" id="agama" name="agama" value="<?= isset($siswa['agama']) ? htmlspecialchars($siswa['agama']) : '' ?>">
           </div>
           <div class="form-group">
+            <label for="status_keluarga">Status Dalam Keluarga</label>
+            <input type="text" class="form-control" id="status_keluarga" name="status_keluarga" value="<?= isset($siswa['status_keluarga']) ? htmlspecialchars($siswa['status_keluarga']) : 'Anak Kandung' ?>" placeholder="Contoh: Anak Kandung, Anak Tiri, dll">
+          </div>
+          <div class="form-group">
+            <label for="anak_ke">Anak Ke-</label>
+            <input oninput="this.value = this.value.replace(/[^0-9]/g, '')" type="number" class="form-control" id="anak_ke" name="anak_ke" value="<?= isset($siswa['anak_ke']) ? htmlspecialchars($siswa['anak_ke']) : '1' ?>" min="1" max="20">
+          </div>
+          <div class="form-group">
             <label for="sekolah_asal">Sekolah Asal</label>
             <input type="text" class="form-control" id="sekolah_asal" name="sekolah_asal" value="<?= isset($siswa['sekolah_asal']) ? htmlspecialchars($siswa['sekolah_asal']) : '' ?>">
+          </div>
+          <div class="form-group">
+            <label for="tanggal_diterima">Tanggal Diterima di Sekolah Ini</label>
+            <input type="date" class="form-control" id="tanggal_diterima" name="tanggal_diterima" value="<?= isset($siswa['tanggal_diterima']) ? htmlspecialchars($siswa['tanggal_diterima']) : '' ?>">
+          </div>
+          <div class="form-group">
+            <label for="kelas_diterima">Diterima di Kelas</label>
+            <select class="form-control" id="kelas_diterima" name="kelas_diterima">
+              <option value="">-- Pilih Kelas --</option>
+              <option value="VII" <?= (isset($siswa['kelas_diterima']) && $siswa['kelas_diterima'] == 'VII') ? 'selected' : '' ?>>VII</option>
+              <option value="VIII" <?= (isset($siswa['kelas_diterima']) && $siswa['kelas_diterima'] == 'VIII') ? 'selected' : '' ?>>VIII</option>
+              <option value="IX" <?= (isset($siswa['kelas_diterima']) && $siswa['kelas_diterima'] == 'IX') ? 'selected' : '' ?>>IX</option>
+            </select>
           </div>
           <div class="form-group">
             <label for="nomor_hp">Nomor HP</label>
