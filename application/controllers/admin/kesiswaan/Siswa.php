@@ -214,19 +214,77 @@ class Siswa extends CI_Controller {
 			$this->session->set_flashdata('error', "Data siswa sedang aktif di periode ".$active_periode['tahun_ajaran'].", tidak dapat dihapus.");
 			return redirect($this->own_link);
 		}
-		
+
 		$model = $this->Siswa_model->find($id);
     if (empty($model)) {
 			$this->session->set_flashdata('error', "Data not found");
     	return redirect($this->own_link);
     }
+
     $deleted_at = date("Y-m-d H:i:s");
-		$save = $this->Dbhelper->updateData($this->table, array('id'=>$id), array("deleted_at" => $deleted_at));
-		$save = $this->Dbhelper->updateData('m_users', array('id'=>$model->users_id), array("deleted_at" => $deleted_at));
-		if ($save) {
-			$this->session->set_flashdata('success', "Delete data success");
-			return redirect($this->own_link);
-		}
+
+    // Mulai transaction dengan mode strict
+    $this->db->trans_strict(TRUE);
+    $this->db->trans_start();
+
+    // 1. Hapus data siswa utama (soft delete)
+    $this->db->where('id', $id);
+    $this->db->update($this->table, array("deleted_at" => $deleted_at));
+
+    // 2. Hapus data user terkait (soft delete)
+    $this->db->where('id', $model->users_id);
+    $this->db->update('m_users', array("deleted_at" => $deleted_at));
+
+    // 3. Hapus data orang tua siswa (hard delete karena tidak ada deleted_at)
+    $this->db->where('users_id', $model->users_id);
+    $this->db->delete('mt_users_siswa_orangtua');
+
+    // 4. Hapus data kelas siswa (hard delete)
+    $this->db->where('siswa_id', $id);
+    $this->db->delete('tref_kelas_siswa');
+
+    // 5. Hapus data ekstrakulikuler siswa (hard delete)
+    $this->db->where('siswa_id', $id);
+    $this->db->delete('tref_kelas_siswa_ekskul');
+
+    // 6. Hapus data grading siswa (hard delete)
+    $this->db->where('siswa_id', $id);
+    $this->db->delete('tr_egrading_siswa');
+
+    // 7. Hapus data rapor siswa (hard delete)
+    $this->db->where('siswa_id', $id);
+    $this->db->delete('tr_rapor');
+
+    // 8. Hapus data absensi siswa (hard delete)
+    $this->db->where('siswa_id', $id);
+    $this->db->delete('tref_pertemuan_absensi');
+
+    // 9. Hapus data tugas siswa (hard delete)
+    $this->db->where('siswa_id', $id);
+    $this->db->delete('tref_pertemuan_tugas');
+
+    // 10. Hapus data diskusi siswa (hard delete)
+    $this->db->where('siswa_id', $id);
+    $this->db->delete('tref_pertemuan_diskusi');
+
+    // 11. Hapus data aspirasi siswa (soft delete jika ada deleted_at)
+    $this->db->where('siswa_id', $id);
+    $this->db->update('tref_aspirasi', array("deleted_at" => $deleted_at));
+
+    // 12. Hapus data konseling siswa (soft delete jika ada deleted_at)
+    $this->db->where('siswa_id', $id);
+    $this->db->update('tref_konseling', array("deleted_at" => $deleted_at));
+
+    // Selesaikan transaction
+    $this->db->trans_complete();
+
+    if ($this->db->trans_status() === FALSE) {
+    	$this->session->set_flashdata('error', "Gagal menghapus data siswa. Terjadi kesalahan database.");
+    	return redirect($this->own_link);
+    }
+
+    $this->session->set_flashdata('success', "Data siswa dan semua data terkait berhasil dihapus");
+    return redirect($this->own_link);
 	}
 
 	public function export() {
@@ -240,7 +298,121 @@ class Siswa extends CI_Controller {
 	}
 
 	public function template() {
-		force_download('assets/template_siswa.xlsx',NULL);
+		if (!class_exists('PhpOffice\PhpSpreadsheet\Spreadsheet')) {
+			// Fallback ke template lama jika PhpSpreadsheet tidak tersedia
+			force_download('assets/template_siswa.xlsx',NULL);
+			return;
+		}
+
+		// Generate template baru dengan field lengkap sesuai urutan form
+		$spreadsheet = new Spreadsheet();
+		$sheet = $spreadsheet->getActiveSheet();
+
+		// Style untuk header
+		$styleHeader = [
+			'font' => ['bold' => true, 'size' => 11, 'color' => ['rgb' => 'FFFFFF']],
+			'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
+			'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER, 'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER],
+			'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]]
+		];
+
+		// Set header columns sesuai urutan form
+		// DATA PRIBADI
+		$sheet->setCellValue('A1', 'NISN *');
+		$sheet->setCellValue('B1', 'Nomor Induk');
+		$sheet->setCellValue('C1', 'Nama Lengkap *');
+		$sheet->setCellValue('D1', 'Tempat Lahir');
+		$sheet->setCellValue('E1', 'Tanggal Lahir *');
+		$sheet->setCellValue('F1', 'Jenis Kelamin');
+		$sheet->setCellValue('G1', 'Agama');
+		$sheet->setCellValue('H1', 'Status Keluarga');
+		$sheet->setCellValue('I1', 'Anak Ke');
+		// DATA PENDIDIKAN
+		$sheet->setCellValue('J1', 'Sekolah Asal');
+		$sheet->setCellValue('K1', 'Tanggal Diterima');
+		$sheet->setCellValue('L1', 'Diterima di Kelas');
+		// KONTAK
+		$sheet->setCellValue('M1', 'Nomor HP');
+		$sheet->setCellValue('N1', 'Alamat');
+		// DATA ORANG TUA
+		$sheet->setCellValue('O1', 'Nama Orang Tua');
+		$sheet->setCellValue('P1', 'Hubungan Keluarga');
+		$sheet->setCellValue('Q1', 'Alamat Orang Tua');
+		$sheet->setCellValue('R1', 'Nomor HP Orang Tua');
+		$sheet->setCellValue('S1', 'Email Orang Tua');
+		$sheet->setCellValue('T1', 'Pekerjaan Orang Tua');
+
+		// Apply style ke header
+		$sheet->getStyle('A1:T1')->applyFromArray($styleHeader);
+
+		// Set column widths
+		$sheet->getColumnDimension('A')->setWidth(15);
+		$sheet->getColumnDimension('B')->setWidth(15);
+		$sheet->getColumnDimension('C')->setWidth(25);
+		$sheet->getColumnDimension('D')->setWidth(15);
+		$sheet->getColumnDimension('E')->setWidth(15);
+		$sheet->getColumnDimension('F')->setWidth(15);
+		$sheet->getColumnDimension('G')->setWidth(12);
+		$sheet->getColumnDimension('H')->setWidth(18);
+		$sheet->getColumnDimension('I')->setWidth(10);
+		$sheet->getColumnDimension('J')->setWidth(20);
+		$sheet->getColumnDimension('K')->setWidth(15);
+		$sheet->getColumnDimension('L')->setWidth(15);
+		$sheet->getColumnDimension('M')->setWidth(15);
+		$sheet->getColumnDimension('N')->setWidth(30);
+		$sheet->getColumnDimension('O')->setWidth(25);
+		$sheet->getColumnDimension('P')->setWidth(18);
+		$sheet->getColumnDimension('Q')->setWidth(30);
+		$sheet->getColumnDimension('R')->setWidth(15);
+		$sheet->getColumnDimension('S')->setWidth(25);
+		$sheet->getColumnDimension('T')->setWidth(20);
+
+		// Add contoh data
+		$sheet->setCellValue('A2', '1234567890');
+		$sheet->setCellValue('B2', 'NIS001');
+		$sheet->setCellValue('C2', 'Nama Siswa Contoh');
+		$sheet->setCellValue('D2', 'Jakarta');
+		$sheet->setCellValue('E2', '2010-01-15');
+		$sheet->setCellValue('F2', 'Laki-laki');
+		$sheet->setCellValue('G2', 'Islam');
+		$sheet->setCellValue('H2', 'Anak Kandung');
+		$sheet->setCellValue('I2', '1');
+		$sheet->setCellValue('J2', 'SD Negeri 1');
+		$sheet->setCellValue('K2', '2023-07-01');
+		$sheet->setCellValue('L2', 'VII');
+		$sheet->setCellValue('M2', '08123456789');
+		$sheet->setCellValue('N2', 'Jl. Contoh No. 123');
+		$sheet->setCellValue('O2', 'Nama Orang Tua');
+		$sheet->setCellValue('P2', 'Ayah');
+		$sheet->setCellValue('Q2', 'Jl. Contoh No. 123');
+		$sheet->setCellValue('R2', '08123456789');
+		$sheet->setCellValue('S2', 'orangtua@email.com');
+		$sheet->setCellValue('T2', 'PNS');
+
+		// Add note
+		$sheet->setCellValue('A3', 'Catatan:');
+		$sheet->mergeCells('A3:T3');
+		$sheet->setCellValue('A4', '* Field wajib diisi');
+		$sheet->mergeCells('A4:T4');
+		$sheet->setCellValue('A5', 'Format Tanggal: YYYY-MM-DD (contoh: 2010-01-15)');
+		$sheet->mergeCells('A5:T5');
+		$sheet->setCellValue('A6', 'Jenis Kelamin: Laki-laki atau Perempuan');
+		$sheet->mergeCells('A6:T6');
+		$sheet->setCellValue('A7', 'Diterima di Kelas: VII, VIII, atau IX');
+		$sheet->mergeCells('A7:T7');
+
+		$sheet->getStyle('A3:A7')->getFont()->setItalic(true)->setSize(9);
+		$sheet->getStyle('A3:A7')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+
+		$writer = new Xlsx($spreadsheet);
+		$filename = 'template_siswa_lengkap.xlsx';
+
+		header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+		header('Content-Disposition: attachment;filename="'. $filename .'"');
+		header('Cache-Control: max-age=0');
+
+		$writer->save('php://output');
+		exit;
 	}
 
 	public function import() {
@@ -256,24 +428,29 @@ class Siswa extends CI_Controller {
 			$spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($fileTmpPath);
 			$sheet = $spreadsheet->getActiveSheet();
 
-			// 1. Menambahkan kolom orang tua ke $headcol
+			// 1. Menambahkan kolom siswa lengkap dan orang tua ke $headcol
 			$headcol = [
 								"A"	=> "nisn",
                 "B" => "nomor_induk",
                 "C" => "nama",
                 "D" => "tempat_lahir",
                 "E" => "tanggal_lahir",
-                "F" => "agama",
-								"G" => "sekolah_asal",
-								"H" => "nomor_hp",
-                "I" => "alamat",
+                "F" => "jenis_kelamin",
+                "G" => "agama",
+                "H" => "status_keluarga",
+                "I" => "anak_ke",
+								"J" => "sekolah_asal",
+								"K" => "tanggal_diterima",
+								"L" => "kelas_diterima",
+								"M" => "nomor_hp",
+                "N" => "alamat",
                 // Kolom untuk data orang tua
-                "J" => "nama_lengkap_orangtua",
-                "K" => "hubungan_keluarga",
-                "L" => "alamat_orangtua",
-                "M" => "nomor_hp_orangtua",
-                "N" => "email_orangtua",
-                "O" => "pekerjaan_orangtua",
+                "O" => "nama_lengkap_orangtua",
+                "P" => "hubungan_keluarga",
+                "Q" => "alamat_orangtua",
+                "R" => "nomor_hp_orangtua",
+                "S" => "email_orangtua",
+                "T" => "pekerjaan_orangtua",
             ];
 
             $rowsDataSiswa = [];
@@ -286,6 +463,7 @@ class Siswa extends CI_Controller {
 
 			$active_periode = active_periode();
 			// dd($active_periode);
+
             // Memulai iterasi dari baris ke-2 (untuk melewati header)
             foreach ($sheet->getRowIterator() as $i => $row) {
 				if ($i > 1) {
@@ -300,72 +478,115 @@ class Siswa extends CI_Controller {
 								$rowData['nisn'] = $value;
 							}
 							if ($index_headcol == "E") { // Tanggal Lahir
-								$timestamp = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToTimestamp($value);
-								$value = date('Y-m-d', $timestamp);
+								if (!empty($value) && is_numeric($value)) {
+									$timestamp = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToTimestamp($value);
+									$value = date('Y-m-d', $timestamp);
+								}
+							}
+							if ($index_headcol == "K") { // Tanggal Diterima
+								if (!empty($value) && is_numeric($value)) {
+									$timestamp = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToTimestamp($value);
+									$value = date('Y-m-d', $timestamp);
+								}
 							}
 							$rowData[$headcol[$index_headcol]] = $value;
 						}
 					}
+
+					// Hanya proses jika ada NISN
 					if (!empty($rowData['nisn'])) {
 						$nisn_list[] = $rowData['nisn'];
+
+						// Menyiapkan data untuk tabel m_users
+						$password_raw = 'negrac#' . date('dmY', strtotime($rowData['tanggal_lahir']));
+						$rowsUsersData[] = [
+							"user_group_id" => 3,
+							"username"      => $rowData["nisn"],
+							"name"          => $rowData["nama"],
+							"password"      => password_hash($password_raw, PASSWORD_DEFAULT),
+							"password_raw"  => $password_raw,
+							"created_at"    => date('Y-m-d H:i:s'),
+							"updated_at"    => date('Y-m-d H:i:s'),
+						];
+
+						$rowSiswa = $rowData;
+						// Menyimpan data siswa dan orang tua dengan key NISN untuk relasi nanti
+						unset($rowSiswa['nama_lengkap_orangtua']);
+						unset($rowSiswa['hubungan_keluarga']);
+						unset($rowSiswa['alamat_orangtua']);
+						unset($rowSiswa['nomor_hp_orangtua']);
+						unset($rowSiswa['email_orangtua']);
+						unset($rowSiswa['pekerjaan_orangtua']);
+
+						$rowSiswa['join_periode_id'] = $active_periode['periode_id'];
+						$rowsDataSiswa[$rowData["nisn"]] = $rowSiswa;
+
+						// 2. Menyiapkan data untuk tabel orang tua
+						$rowsDataOrangtua[$rowData["nisn"]] = [
+							'nama_lengkap'      => $rowData['nama_lengkap_orangtua'],
+							'hubungan_keluarga' => $rowData['hubungan_keluarga'],
+							'alamat'            => $rowData['alamat_orangtua'],
+							'nomor_hp'          => $rowData['nomor_hp_orangtua'],
+							'email'             => $rowData['email_orangtua'],
+							'pekerjaan'         => $rowData['pekerjaan_orangtua'],
+						];
 					}
-			// Validasi duplikat NISN sekaligus sebelum insert
+                }
+            }
+
+			// Validasi duplikat NISN sekaligus sebelum insert (DI LUAR LOOP)
+			// Hanya cek data yang belum dihapus (deleted_at IS NULL)
 			if (!empty($nisn_list)) {
-				$existing_nisn = $this->db->where_in('nisn', $nisn_list)->get('mt_users_siswa')->result_array();
+				// Cek duplikat di tabel mt_users_siswa
+				$this->db->select('nisn');
+				$this->db->from('mt_users_siswa');
+				$this->db->where_in('nisn', $nisn_list);
+				$this->db->where('deleted_at IS NULL', NULL, FALSE);
+				$existing_nisn = $this->db->get()->result_array();
+
 				if (!empty($existing_nisn)) {
 					$duplikat = array_column($existing_nisn, 'nisn');
-					$this->session->set_flashdata('error', 'Error: Duplikat data NISN: ' . implode(', ', $duplikat));
+					$this->session->set_flashdata('error', 'Error: Duplikat NISN yang masih aktif di database: ' . implode(', ', $duplikat));
+					return redirect($this->own_link);
+				}
+
+				// Cek duplikat di tabel m_users (username)
+				$this->db->select('username');
+				$this->db->from('m_users');
+				$this->db->where_in('username', $nisn_list);
+				$this->db->where('deleted_at IS NULL', NULL, FALSE);
+				$existing_username = $this->db->get()->result_array();
+
+				if (!empty($existing_username)) {
+					$duplikat = array_column($existing_username, 'username');
+					$this->session->set_flashdata('error', 'Error: Username (NISN) sudah digunakan: ' . implode(', ', $duplikat));
 					return redirect($this->own_link);
 				}
 			}
-
-                    // Menyiapkan data untuk tabel m_users
-					$password_raw = 'negrac#' . date('dmY', strtotime($rowData['tanggal_lahir']));
-					$rowsUsersData[] = [
-						"user_group_id" => 3, // Asumsi group_id siswa adalah 3
-						"username"      => $rowData["nisn"],
-						"name"          => $rowData["nama"],
-						"password"      => password_hash($password_raw, PASSWORD_DEFAULT),
-						"password_raw"  => $password_raw,
-						"created_at"    => date('Y-m-d H:i:s'),
-						"updated_at"    => date('Y-m-d H:i:s'),
-					];
-
-					$rowSiswa = $rowData;
-                    // Menyimpan data siswa dan orang tua dengan key NISN untuk relasi nanti
-					unset($rowSiswa['nama_lengkap_orangtua']);
-					unset($rowSiswa['hubungan_keluarga']);
-					unset($rowSiswa['alamat_orangtua']);
-					unset($rowSiswa['nomor_hp_orangtua']);
-					unset($rowSiswa['email_orangtua']);
-					unset($rowSiswa['pekerjaan_orangtua']);
-
-					$rowSiswa['join_periode_id'] = $active_periode['periode_id'];
-					// dd($rowSiswa);
-                    $rowsDataSiswa[$rowData["nisn"]] = $rowSiswa;
-                    
-                    // 2. Menyiapkan data untuk tabel orang tua
-                    $rowsDataOrangtua[$rowData["nisn"]] = [
-                        'nama_lengkap'      => $rowData['nama_lengkap_orangtua'],
-                        'hubungan_keluarga' => $rowData['hubungan_keluarga'],
-                        'alamat'            => $rowData['alamat_orangtua'],
-                        'nomor_hp'          => $rowData['nomor_hp_orangtua'],
-                        'email'             => $rowData['email_orangtua'],
-                        'pekerjaan'         => $rowData['pekerjaan_orangtua'],
-                    ];
-
-                    $nisn_list[] = $rowData["nisn"];
-                }
-            }
 
             // 3. Menggunakan Transaction untuk keamanan data
             $this->db->trans_start();
 
             // Insert batch ke m_users
             $this->db->insert_batch("m_users", $rowsUsersData);
-            
+
             // Ambil data user yang baru saja di-insert untuk mendapatkan ID-nya
-            $get_users = $this->db->where_in('username', $nisn_list)->from('m_users')->get()->result_array();
+            // PENTING: Hanya ambil yang BARU di-insert (deleted_at IS NULL dan created_at paling baru)
+            $get_users = $this->db->where_in('username', $nisn_list)
+                                  ->where('deleted_at IS NULL', NULL, FALSE)
+                                  ->order_by('id', 'DESC')
+                                  ->from('m_users')
+                                  ->get()
+                                  ->result_array();
+
+            // Deduplikasi berdasarkan username untuk memastikan hanya 1 user per NISN
+            $unique_users = [];
+            foreach ($get_users as $user) {
+                if (!isset($unique_users[$user['username']])) {
+                    $unique_users[$user['username']] = $user;
+                }
+            }
+            $get_users = array_values($unique_users);
             
             if (!empty($get_users)) {
                 $finalSiswaData = [];

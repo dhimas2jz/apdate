@@ -263,8 +263,13 @@ CREATE TABLE IF NOT EXISTS `mt_users_siswa` (
   `nama` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `tempat_lahir` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `tanggal_lahir` date NOT NULL,
+  `jenis_kelamin` varchar(20) DEFAULT NULL,
   `agama` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  `status_keluarga` varchar(50) DEFAULT NULL,
+  `anak_ke` int DEFAULT NULL,
   `sekolah_asal` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  `tanggal_diterima` date DEFAULT NULL,
+  `kelas_diterima` varchar(10) DEFAULT NULL,
   `nomor_hp` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `status_siswa` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'baru',
   `alamat` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
@@ -773,11 +778,11 @@ INSERT INTO `tr_rapor` (`id`, `siswa_id`, `kelas_id`, `periode_id`, `semester_id
 -- Menambahkan field yang hilang untuk data siswa
 -- ========================================
 ALTER TABLE `mt_users_siswa`
-ADD COLUMN `jenis_kelamin` ENUM('Laki-laki', 'Perempuan') DEFAULT 'Laki-laki' AFTER `tanggal_lahir`,
-ADD COLUMN `status_keluarga` VARCHAR(50) DEFAULT 'Anak Kandung' AFTER `jenis_kelamin`,
-ADD COLUMN `anak_ke` TINYINT DEFAULT 1 AFTER `status_keluarga`,
-ADD COLUMN `tanggal_diterima` DATE NULL AFTER `anak_ke`,
-ADD COLUMN `kelas_diterima` VARCHAR(10) NULL AFTER `tanggal_diterima`;
+ADD COLUMN IF NOT EXISTS `jenis_kelamin` VARCHAR(20) NULL AFTER `tanggal_lahir`,
+ADD COLUMN IF NOT EXISTS `status_keluarga` VARCHAR(50) NULL AFTER `agama`,
+ADD COLUMN IF NOT EXISTS `anak_ke` INT NULL AFTER `status_keluarga`,
+ADD COLUMN IF NOT EXISTS `tanggal_diterima` DATE NULL AFTER `sekolah_asal`,
+ADD COLUMN IF NOT EXISTS `kelas_diterima` VARCHAR(10) NULL AFTER `tanggal_diterima`;
 
 -- ========================================
 -- 2. CREATE TABLE mt_sekolah
