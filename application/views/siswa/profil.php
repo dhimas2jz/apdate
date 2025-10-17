@@ -64,11 +64,11 @@
           </div>
           <div class="form-group">
             <label for="tanggal_diterima">Tanggal Diterima di Sekolah Ini</label>
-            <input type="date" class="form-control" id="tanggal_diterima" name="tanggal_diterima" value="<?= isset($siswa['tanggal_diterima']) ? htmlspecialchars($siswa['tanggal_diterima']) : '' ?>">
+            <input type="date" class="form-control" id="tanggal_diterima" name="tanggal_diterima" value="<?= isset($siswa['tanggal_diterima']) ? htmlspecialchars($siswa['tanggal_diterima']) : '' ?>" disabled>
           </div>
           <div class="form-group">
             <label for="kelas_diterima">Diterima di Kelas</label>
-            <select class="form-control" id="kelas_diterima" name="kelas_diterima">
+            <select class="form-control" id="kelas_diterima" name="kelas_diterima" disabled>
               <option value="">-- Pilih Kelas --</option>
               <option value="VII" <?= (isset($siswa['kelas_diterima']) && $siswa['kelas_diterima'] == 'VII') ? 'selected' : '' ?>>VII</option>
               <option value="VIII" <?= (isset($siswa['kelas_diterima']) && $siswa['kelas_diterima'] == 'VIII') ? 'selected' : '' ?>>VIII</option>

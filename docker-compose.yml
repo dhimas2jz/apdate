@@ -39,7 +39,6 @@ services:
     volumes:
       - db_data:/var/lib/mysql
       - ./DB_APDATE.sql:/docker-entrypoint-initdb.d/01_DB_APDATE.sql
-      - ./DB_FIX_ERAPOR.sql:/docker-entrypoint-initdb.d/02_DB_FIX_ERAPOR.sql
     networks:
       - apdate_network
 

@@ -30,7 +30,7 @@
           </div>
           <div class="mb-2">
             <button type="submit" class="btn btn-info btn-flat">Filter</button>
-            <button type="submit" class="btn btn-danger btn-flat" formaction="<?= base_url('siswa/akademik/nilai-semester/pdf') ?>" formtarget="_blank">Cetak</button>
+            <button type="submit" class="btn btn-danger btn-flat" formaction="<?= base_url('siswa/akademik/nilai-semester/pdf') ?>" formtarget="_blank" <?= empty($filter['periode_semester']) ? 'disabled' : '' ?>>Cetak</button>
           </div>
         </form>
         <br>

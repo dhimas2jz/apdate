@@ -137,7 +137,7 @@
           <li class="nav-item "><a href="<?= base_url('siswa/aktifitas-lms') ?>" class="nav-link"><i class="nav-icon fas fa-book"></i><p>Aktifitas LMS</p></a></li>
           <li class="nav-item "><a href="<?= base_url('siswa/lms') ?>" class="nav-link"><i class="nav-icon fas fa-book"></i><p>LMS</p></a></li>
           <li class="nav-item "><a href="<?= base_url('siswa/aspirasi') ?>" class="nav-link"><i class="nav-icon fas fa-share"></i><p>Aspirasi Siswa</p></a></li>
-          <li class="nav-item "><a href="<?= base_url('siswa/konseling') ?>" class="nav-link"><i class="nav-icon fas fa-share"></i><p>Konseling Siswa</p></a></li><li class="nav-item "><a href="<?= base_url('guru/dokumen') ?>" class="nav-link"><i class="nav-icon fas fa-file"></i><p>Dokumen</p></a></li>
+          <li class="nav-item "><a href="<?= base_url('siswa/konseling') ?>" class="nav-link"><i class="nav-icon fas fa-share"></i><p>Konseling Siswa</p></a></li><li class="nav-item "><a href="<?= base_url('siswa/dokumen') ?>" class="nav-link"><i class="nav-icon fas fa-file"></i><p>Dokumen</p></a></li>
          
         </ul>
       </nav>

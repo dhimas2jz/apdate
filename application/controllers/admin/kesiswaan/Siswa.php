@@ -1,5 +1,8 @@
 <?php
-require_once FCPATH . 'vendor/autoload.php';
+// Load PhpSpreadsheet only if vendor/autoload.php exists
+if (file_exists(FCPATH . 'vendor/autoload.php')) {
+	require_once FCPATH . 'vendor/autoload.php';
+}
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -227,6 +230,10 @@ class Siswa extends CI_Controller {
 	}
 
 	public function export() {
+		if (!class_exists('PhpOffice\PhpSpreadsheet\Spreadsheet')) {
+			$this->session->set_flashdata('error', 'PhpSpreadsheet library tidak tersedia. Silakan install composer dependencies terlebih dahulu.');
+			return redirect($this->own_link);
+		}
 		$list = $this->Siswa_model->all();
 		$this->toExcel($list);
 		die();
@@ -238,6 +245,11 @@ class Siswa extends CI_Controller {
 
 	public function import() {
 	if ($this->input->server('REQUEST_METHOD') === 'POST') {
+		if (!class_exists('PhpOffice\PhpSpreadsheet\IOFactory')) {
+			$this->session->set_flashdata('error', 'PhpSpreadsheet library tidak tersedia. Silakan install composer dependencies terlebih dahulu.');
+			return redirect($this->own_link);
+		}
+
 		if (isset($_FILES['file']) && $_FILES['file']['error'] == UPLOAD_ERR_OK) {
 			set_time_limit(600);
 			$fileTmpPath = $_FILES['file']['tmp_name'];

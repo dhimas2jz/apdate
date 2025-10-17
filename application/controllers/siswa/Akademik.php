@@ -84,8 +84,23 @@ class Akademik extends CI_Controller {
 		if ($this->input->server('REQUEST_METHOD') === 'POST') {
 			$session = $this->session->userdata('user_dashboard');
 			$post = $this->input->post();
+
+			// Validasi apakah periode_semester ada dan tidak kosong
+			if (empty($post['periode_semester'])) {
+				$this->session->set_flashdata('error', 'Silakan pilih semester terlebih dahulu!');
+				redirect('siswa/akademik/nilai-semester');
+				return;
+			}
+
 			$explode_post = explode('_', $post['periode_semester']);
-			
+
+			// Validasi apakah hasil explode memiliki 2 elemen
+			if (count($explode_post) < 2) {
+				$this->session->set_flashdata('error', 'Format semester tidak valid!');
+				redirect('siswa/akademik/nilai-semester');
+				return;
+			}
+
 			$periode_id = (int)$explode_post[0];
 			$semester_id = (int)$explode_post[1];
 			$siswa_id 		= $session['user']['siswa']['id'];

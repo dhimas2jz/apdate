@@ -38,19 +38,26 @@
     <script src="<?php echo base_url() ?>/assets/dist/js/Sortable.min.js"></script>
     <script type="text/javascript">
       $(document).ready(function(){
-        <?php 
+        <?php
           if ($this->session->flashdata("error")) {
         ?>
-            toastError('<?php echo $this->session->flashdata("error"); ?>');
+            Swal.fire({
+              icon: 'error',
+              title: 'Oops...',
+              text: '<?php echo addslashes($this->session->flashdata("error")); ?>'
+            });
         <?php
             unset($_SESSION['error']);
           } elseif ($this->session->flashdata("success")) {
         ?>
-            toastSuccess('<?php echo $this->session->flashdata("success"); ?>');
+            Swal.fire({
+              icon: 'success',
+              title: 'Berhasil!',
+              text: '<?php echo addslashes($this->session->flashdata("success")); ?>'
+            });
         <?php
             unset($_SESSION['success']);
           }
-        ?>
         ?>
 
         $('.select2').select2({theme: 'bootstrap4'});
