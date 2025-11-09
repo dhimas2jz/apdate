@@ -184,6 +184,10 @@ class Guru extends CI_Controller {
 			$this->privilege('is_create');
 			$post_data = [];
 			foreach ($post as $key => $value) {
+				// Skip array values (seperti mata_pelajaran_ids)
+				if (is_array($value)) {
+					continue;
+				}
 				$val = dbClean($value);
 				$post_data[$key] = $val;
 			}

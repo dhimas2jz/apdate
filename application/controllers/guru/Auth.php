@@ -19,7 +19,12 @@ class Auth extends CI_Controller {
 		if ($this->input->post('username')) {
 			$username 		= dbClean($this->input->post('username'));
 			$password 	= dbClean($this->input->post('password'));
-			$user = $this->Dbhelper->selectTabel('id, user_group_id, username, name, email, password', 'm_users', array('username'=>$username, 'user_group_id' => 2));
+			// Tambahkan pengecekan deleted_at untuk mencegah user yang sudah dihapus login
+			$this->db->where('username', $username);
+			$this->db->where('user_group_id', 2);
+			$this->db->where('deleted_at IS NULL', NULL, FALSE);
+			$user_query = $this->db->get('m_users');
+			$user = $user_query->result_array();
 			if (count($user) < 1) {
 				$this->session->set_flashdata('alert', 'User account not found');
 			} elseif (count($user) > 0 && password_verify($password, $user[0]['password'])) {

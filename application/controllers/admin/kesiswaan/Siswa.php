@@ -297,123 +297,21 @@ class Siswa extends CI_Controller {
 		die();
 	}
 
-	public function template() {
-		if (!class_exists('PhpOffice\PhpSpreadsheet\Spreadsheet')) {
-			// Fallback ke template lama jika PhpSpreadsheet tidak tersedia
-			force_download('assets/template_siswa.xlsx',NULL);
-			return;
-		}
+	public function template()
+{
+    // Path ke file template lama
+    $file_path = FCPATH . 'assets/template_siswa.xlsx';
 
-		// Generate template baru dengan field lengkap sesuai urutan form
-		$spreadsheet = new Spreadsheet();
-		$sheet = $spreadsheet->getActiveSheet();
+    // Cek apakah file-nya ada
+    if (!file_exists($file_path)) {
+        $this->session->set_flashdata('error', 'File template siswa tidak ditemukan.');
+        return redirect($this->own_link);
+    }
 
-		// Style untuk header
-		$styleHeader = [
-			'font' => ['bold' => true, 'size' => 11, 'color' => ['rgb' => 'FFFFFF']],
-			'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
-			'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER, 'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER],
-			'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]]
-		];
-
-		// Set header columns sesuai urutan form
-		// DATA PRIBADI
-		$sheet->setCellValue('A1', 'NISN *');
-		$sheet->setCellValue('B1', 'Nomor Induk');
-		$sheet->setCellValue('C1', 'Nama Lengkap *');
-		$sheet->setCellValue('D1', 'Tempat Lahir');
-		$sheet->setCellValue('E1', 'Tanggal Lahir *');
-		$sheet->setCellValue('F1', 'Jenis Kelamin');
-		$sheet->setCellValue('G1', 'Agama');
-		$sheet->setCellValue('H1', 'Status Keluarga');
-		$sheet->setCellValue('I1', 'Anak Ke');
-		// DATA PENDIDIKAN
-		$sheet->setCellValue('J1', 'Sekolah Asal');
-		$sheet->setCellValue('K1', 'Tanggal Diterima');
-		$sheet->setCellValue('L1', 'Diterima di Kelas');
-		// KONTAK
-		$sheet->setCellValue('M1', 'Nomor HP');
-		$sheet->setCellValue('N1', 'Alamat');
-		// DATA ORANG TUA
-		$sheet->setCellValue('O1', 'Nama Orang Tua');
-		$sheet->setCellValue('P1', 'Hubungan Keluarga');
-		$sheet->setCellValue('Q1', 'Alamat Orang Tua');
-		$sheet->setCellValue('R1', 'Nomor HP Orang Tua');
-		$sheet->setCellValue('S1', 'Email Orang Tua');
-		$sheet->setCellValue('T1', 'Pekerjaan Orang Tua');
-
-		// Apply style ke header
-		$sheet->getStyle('A1:T1')->applyFromArray($styleHeader);
-
-		// Set column widths
-		$sheet->getColumnDimension('A')->setWidth(15);
-		$sheet->getColumnDimension('B')->setWidth(15);
-		$sheet->getColumnDimension('C')->setWidth(25);
-		$sheet->getColumnDimension('D')->setWidth(15);
-		$sheet->getColumnDimension('E')->setWidth(15);
-		$sheet->getColumnDimension('F')->setWidth(15);
-		$sheet->getColumnDimension('G')->setWidth(12);
-		$sheet->getColumnDimension('H')->setWidth(18);
-		$sheet->getColumnDimension('I')->setWidth(10);
-		$sheet->getColumnDimension('J')->setWidth(20);
-		$sheet->getColumnDimension('K')->setWidth(15);
-		$sheet->getColumnDimension('L')->setWidth(15);
-		$sheet->getColumnDimension('M')->setWidth(15);
-		$sheet->getColumnDimension('N')->setWidth(30);
-		$sheet->getColumnDimension('O')->setWidth(25);
-		$sheet->getColumnDimension('P')->setWidth(18);
-		$sheet->getColumnDimension('Q')->setWidth(30);
-		$sheet->getColumnDimension('R')->setWidth(15);
-		$sheet->getColumnDimension('S')->setWidth(25);
-		$sheet->getColumnDimension('T')->setWidth(20);
-
-		// Add contoh data
-		$sheet->setCellValue('A2', '1234567890');
-		$sheet->setCellValue('B2', 'NIS001');
-		$sheet->setCellValue('C2', 'Nama Siswa Contoh');
-		$sheet->setCellValue('D2', 'Jakarta');
-		$sheet->setCellValue('E2', '2010-01-15');
-		$sheet->setCellValue('F2', 'Laki-laki');
-		$sheet->setCellValue('G2', 'Islam');
-		$sheet->setCellValue('H2', 'Anak Kandung');
-		$sheet->setCellValue('I2', '1');
-		$sheet->setCellValue('J2', 'SD Negeri 1');
-		$sheet->setCellValue('K2', '2023-07-01');
-		$sheet->setCellValue('L2', 'VII');
-		$sheet->setCellValue('M2', '08123456789');
-		$sheet->setCellValue('N2', 'Jl. Contoh No. 123');
-		$sheet->setCellValue('O2', 'Nama Orang Tua');
-		$sheet->setCellValue('P2', 'Ayah');
-		$sheet->setCellValue('Q2', 'Jl. Contoh No. 123');
-		$sheet->setCellValue('R2', '08123456789');
-		$sheet->setCellValue('S2', 'orangtua@email.com');
-		$sheet->setCellValue('T2', 'PNS');
-
-		// Add note
-		$sheet->setCellValue('A3', 'Catatan:');
-		$sheet->mergeCells('A3:T3');
-		$sheet->setCellValue('A4', '* Field wajib diisi');
-		$sheet->mergeCells('A4:T4');
-		$sheet->setCellValue('A5', 'Format Tanggal: YYYY-MM-DD (contoh: 2010-01-15)');
-		$sheet->mergeCells('A5:T5');
-		$sheet->setCellValue('A6', 'Jenis Kelamin: Laki-laki atau Perempuan');
-		$sheet->mergeCells('A6:T6');
-		$sheet->setCellValue('A7', 'Diterima di Kelas: VII, VIII, atau IX');
-		$sheet->mergeCells('A7:T7');
-
-		$sheet->getStyle('A3:A7')->getFont()->setItalic(true)->setSize(9);
-		$sheet->getStyle('A3:A7')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
-
-		$writer = new Xlsx($spreadsheet);
-		$filename = 'template_siswa_lengkap.xlsx';
-
-		header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-		header('Content-Disposition: attachment;filename="'. $filename .'"');
-		header('Cache-Control: max-age=0');
-
-		$writer->save('php://output');
-		exit;
-	}
+    // Langsung kirim file ke browser untuk diunduh
+    $this->load->helper('download');
+    force_download($file_path, NULL);
+}
 
 	public function import() {
 	if ($this->input->server('REQUEST_METHOD') === 'POST') {

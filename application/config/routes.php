@@ -215,6 +215,7 @@ $route['dashboard'] 								= 'admin/dashboard';
 	$route['guru/wali-kelas/e-rapor/pdf/(:any)'] 			= 'guru/WaliKelas/erapor_pdf/$1';
 
 	$route['guru/wali-kelas/siswa'] 													= 'guru/WaliKelas/siswa';
+	$route['guru/wali-kelas/siswa/detail/(:any)'] 						= 'guru/WaliKelas/siswa_detail/$1';
 	$route['guru/wali-kelas/siswa/ekstrakulikuler'] 					= 'guru/WaliKelas/siswa_ekstrakulikuler';
 	$route['guru/wali-kelas/siswa/ekstrakulikuler/do_update'] = 'guru/WaliKelas/siswa_ekstrakulikuler_do_update';
 	$route['guru/wali-kelas/konseling'] 	= 'guru/WaliKelas/konseling';

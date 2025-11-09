@@ -41,9 +41,9 @@
               <table class="table table-bordered table-striped">
                 <thead>
                   <tr>
-                    <th width="20%">NISN</th>
+                    <th width="15%">NISN</th>
                     <th>Nama Siswa</th>
-                    <th width="30%">Ekstrakulikuler</th>
+                    <th width="35%">Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -52,7 +52,14 @@
                         <tr>
                           <td><?= htmlspecialchars($row['nisn']) ?></td>
                           <td><?= htmlspecialchars($row['nama']) ?></td>
-                          <td><button type="button" data-siswaid="<?= $row['siswa_id'] ?>" data-kelasid="<?= $row['kelas_id'] ?>" class="btn btn-info btnDetail">Lihat Ekstrakulikuler</button></td>
+                          <td>
+                            <a href="<?= base_url('guru/wali-kelas/siswa/detail/'.$row['siswa_id']) ?>" class="btn btn-primary btn-sm mb-1">
+                              <i class="fas fa-eye"></i> Lihat Data Siswa
+                            </a>
+                            <button type="button" data-siswaid="<?= $row['siswa_id'] ?>" data-kelasid="<?= $row['kelas_id'] ?>" class="btn btn-info btn-sm mb-1 btnDetail">
+                              <i class="fas fa-running"></i> Lihat Ekstrakulikuler
+                            </button>
+                          </td>
                         </tr>
                       <?php endforeach; ?>
                     <?php else: ?>
@@ -89,7 +96,14 @@
           <?php if ($active_periode['status_code'] == 2): ?>
           <div class="form-group row">
             <div class="col-lg-6 col-sm-12">
-              <input type="text" id="ekstrakulikuler_text" name="ekstrakulikuler" class="form-control" required />
+              <select id="ekstrakulikuler_select" name="ekstrakulikuler" class="form-control" required>
+                <option value="">- Pilih Ekstrakulikuler -</option>
+                <?php if (!empty($list_ekstrakulikuler)): ?>
+                  <?php foreach ($list_ekstrakulikuler as $ekskul): ?>
+                    <option value="<?= $ekskul['name'] ?>"><?= $ekskul['name'] ?></option>
+                  <?php endforeach; ?>
+                <?php endif; ?>
+              </select>
             </div>
             <div class="col-lg-6 col-sm-12">
               <button type="button" onclick="simpanEkstrakulikuler()" class="btn btn-success btn-flat">Tambah</button>

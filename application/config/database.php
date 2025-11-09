@@ -6,9 +6,9 @@ $query_builder = TRUE;
 
 $db['default'] = array(
 	'dsn'	=> '',
-	'hostname' => 'db', // Docker service name
+	'hostname' => 'localhost', // Docker service name
 	'username' => 'root',
-	'password' => 'root',
+	'password' => '',
 	'database' => 'apdate',
 	'dbdriver' => 'mysqli',
 	'dbprefix' => '',

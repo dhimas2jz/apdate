@@ -171,12 +171,40 @@ class WaliKelas extends CI_Controller {
 				];
 			}
 		}
-		$data['judul'] = 'E-Rapor';
-		$data['subjudul'] = 'E-Rapor';
+
+		// Ambil list mata pelajaran ekstrakulikuler
+		$data['list_ekstrakulikuler'] = $this->Dbhelper->selectTabel('id, code, name', 'mt_mata_pelajaran', ['is_ekstrakulikuler' => 1, 'is_active' => 1], 'name', 'ASC');
+
+		$data['judul'] = 'Siswa';
+		$data['subjudul'] = 'Data Siswa';
 		// $data['list_kelas'] = $list_kelas;
 		$data['active_periode'] = $active_periode;
 		// dd($data);
 		$this->template->_vGuru('wali_kelas/siswa', $data);
+	}
+
+	public function siswa_detail($siswa_id) {
+		$siswa_id = (int) $siswa_id;
+		$session = $this->session->userdata('user_dashboard');
+		$active_periode = active_periode();
+
+		// Ambil data siswa lengkap
+		$siswa = $this->Siswa_model->find($siswa_id);
+		if (empty($siswa)) {
+			$this->session->set_flashdata('error', "Data siswa tidak ditemukan");
+			return redirect('guru/wali-kelas/siswa');
+		}
+
+		// Ambil data orang tua
+		$ortu = $this->Dbhelper->selectTabel('*', 'mt_users_siswa_orangtua', ['users_id' => $siswa->users_id]);
+
+		$data['judul'] = 'Siswa';
+		$data['subjudul'] = 'Detail Data Siswa';
+		$data['siswa'] = $siswa;
+		$data['ortu'] = $ortu;
+		$data['active_periode'] = $active_periode;
+
+		$this->template->_vGuru('wali_kelas/siswa_detail', $data);
 	}
 
 	public function siswa_ekstrakulikuler() {
