@@ -14,7 +14,7 @@ class Dashboard extends CI_Controller {
 		$session = $this->session->userdata('user_dashboard');
 		$active_periode = active_periode();
 
-		$informasi = $this->db->order_by('created_at', 'DESC')->get('mt_informasi')->result_array();
+		$informasi = $this->db->where('deleted_at IS NULL')->order_by('created_at', 'DESC')->get('mt_informasi')->result_array();
 		$data['informasi'] = $informasi;
 		$data['judul'] = 'Dashboard';
 		$data['subjudul'] = 'Index';
@@ -177,7 +177,7 @@ class Dashboard extends CI_Controller {
 		$session = $this->session->userdata('user_dashboard');
 		$active_periode = active_periode();
 
-		$dokumen = $this->db->get('mt_dokumen')->result_array();
+		$dokumen = $this->db->where('deleted_at IS NULL')->get('mt_dokumen')->result_array();
 		$data['judul'] = 'Dokumen';
 		$data['subjudul'] = 'Informasi Dokumen';
 		$data['dokumen'] = $dokumen;

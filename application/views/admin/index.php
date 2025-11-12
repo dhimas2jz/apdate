@@ -43,11 +43,11 @@
         <div class="card-text-section">
           <p class="card-text text-muted mb-1">Total Guru</p>
           <p class="card-count">
-            <?= isset($total_absen) ? $total_absen : 2 ?>
+            <?= isset($total_guru) ? $total_guru : 0 ?>
           </p>
         </div>
         <div class="icon-container bg-custom-blue">
-          <i class="fa-solid fa-clipboard-list"></i>
+          <i class="fa-solid fa-chalkboard-user"></i>
         </div>
       </div>
     </div>
@@ -59,11 +59,11 @@
         <div class="card-text-section">
           <p class="card-text text-muted mb-1">Total Siswa</p>
           <p class="card-count">
-            <?= isset($total_diskusi) ? $total_diskusi : 3 ?>
+            <?= isset($total_siswa) ? $total_siswa : 0 ?>
           </p>
         </div>
         <div class="icon-container bg-custom-orange">
-          <i class="fa-solid fa-comments"></i>
+          <i class="fa-solid fa-graduation-cap"></i>
         </div>
       </div>
     </div>
@@ -75,11 +75,11 @@
         <div class="card-text-section">
           <p class="card-text text-muted mb-1">Total Kelas</p>
           <p class="card-count">
-            <?= isset($total_tugas) ? $total_tugas : 2 ?>
+            <?= isset($total_kelas) ? $total_kelas : 0 ?>
           </p>
         </div>
         <div class="icon-container bg-custom-red">
-          <i class="fa-solid fa-list-check"></i>
+          <i class="fa-solid fa-school"></i>
         </div>
       </div>
     </div>

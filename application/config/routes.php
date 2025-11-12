@@ -148,6 +148,7 @@ $route['dashboard'] 								= 'admin/dashboard';
 
 	
 	$route['dashboard/aspirasi'] 								= 'admin/Aspirasi/index';
+	$route['dashboard/aspirasi/do_update'] 			= 'admin/Aspirasi/do_update';
 	$route['dashboard/aspirasi/datatables'] 		= 'admin/Aspirasi/datatables';
 
 	$route['dashboard/setting-periode'] 								= 'admin/SettingPeriode/index';
@@ -156,7 +157,9 @@ $route['dashboard'] 								= 'admin/dashboard';
 	$route['dashboard/backup'] 								= 'admin/Backup/index';
 	$route['dashboard/backup/do-backup'] 			= 'admin/Backup/do_backup';
 
+	$route['dashboard/lms'] 																		= 'admin/Lms/tingkat_kelas_index';
 	$route['dashboard/pantau-lms'] 													= 'admin/Lms/tingkat_kelas_index';
+	$route['dashboard/lms/kelas/mapel/(:any)'] 							= 'admin/Lms/kelas_mapel/$1';
 	$route['dashboard/lms/kelas/(:any)'] 										= 'admin/Lms/lms_index/$1';
 	$route['dashboard/lms/detail/(:any)'] 									= 'admin/Lms/index/$1';
 	$route['dashboard/lms/pertemuan/absensi/(:any)'] 				= 'admin/Lms/absensi/$1';

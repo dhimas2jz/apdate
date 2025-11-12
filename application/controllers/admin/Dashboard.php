@@ -8,10 +8,16 @@ class Dashboard extends CI_Controller {
 	}
 
 	public function index() {
-		
-		$informasi = $this->db->order_by('created_at', 'DESC')->get('mt_informasi')->result_array();
+
+		$informasi = $this->db->where('deleted_at IS NULL')->order_by('created_at', 'DESC')->get('mt_informasi')->result_array();
 		$data['active_periode'] = active_periode();
 		$data['informasi'] = $informasi;
+		
+		// Ambil data statistik dari database
+		$data['total_guru'] = $this->db->where('deleted_at IS NULL')->count_all_results('mt_users_guru');
+		$data['total_siswa'] = $this->db->where('deleted_at IS NULL')->count_all_results('mt_users_siswa');
+		$data['total_kelas'] = $this->db->count_all_results('tref_kelas');
+		
 		$data['judul'] = 'Dashboard';
 		$data['subjudul'] = 'Index';
 		$this->template->_v('index', $data);

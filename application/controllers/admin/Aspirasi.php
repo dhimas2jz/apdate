@@ -21,11 +21,36 @@ class Aspirasi extends CI_Controller {
 	}
 
 	public function index() {
+		// Get aspirasi setting
+		$aspirasi_setting = $this->db->where('code', 'aspirasi_status')->get('mt_setting_lms')->row_array();
 
 		$data['judul'] 		= $this->judul;
 		$data['subjudul'] 	= 'List Aspirasi';
 		$data['own_link'] 	= $this->own_link;
+		$data['aspirasi_setting'] = $aspirasi_setting;
 		$this->template->_v('aspirasi', $data);
+	}
+
+	public function do_update() {
+		if ($this->input->server('REQUEST_METHOD') === 'POST') {
+			$post = $this->input->post();
+			$aspirasi_status = isset($post['aspirasi_status']) ? $post['aspirasi_status'] : '';
+
+			$this->db->trans_begin();
+			try {
+				$update = $this->db->where('code', 'aspirasi_status')->update('mt_setting_lms', ['value' => $aspirasi_status]);
+				if (!$update) {
+					throw new Exception("Gagal mengubah setting menu aspirasi");
+				}
+
+				$this->db->trans_commit();
+				success('Perubahan berhasil disimpan');
+			} catch (Exception $e) {
+				$this->db->trans_rollback();
+				error($e->getMessage());
+			}
+		}
+		badrequest('Method not allowed');
 	}
 
 	public function datatables() {

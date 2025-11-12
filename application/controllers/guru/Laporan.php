@@ -245,22 +245,67 @@ class Laporan extends CI_Controller {
 			$rows = $sheet->toArray();
 
 			// Mulai dari baris ke-2 (baris pertama header)
+			$updated_count = 0;
 			for ($i = 1; $i < count($rows); $i++) {
-				$id = isset($rows[$i][0]) ? $rows[$i][0] : null; // Kolom A
-				$nilai = isset($rows[$i][2]) && $rows[$i][2] !== null && $rows[$i][2] !== '' ? $rows[$i][2] : 40; // Kolom C
-				if ($nilai > 100) {
-					@unlink($filePath);
-					error('Nilai tidak boleh lebih dari 100 pada baris ke-' . ($i + 1));
+				$pertemuan_id = isset($rows[$i][0]) ? (int)$rows[$i][0] : null; // Kolom A - Pertemuan ID
+				$nilai = isset($rows[$i][2]) && $rows[$i][2] !== null && $rows[$i][2] !== '' ? (float)$rows[$i][2] : null; // Kolom C - Nilai
+
+				// Skip jika pertemuan_id kosong atau nilai kosong
+				if (!$pertemuan_id || $nilai === null) {
+					continue;
 				}
-				dd($rows[$i]);
-				if ($id) {
-					$this->db->where('id', $id)->update('tref_pertemuan_tugas', ['nilai' => $nilai]);
+
+				// Validasi nilai
+				if ($nilai > 100 || $nilai < 0) {
+					@unlink($filePath);
+					error('Nilai harus antara 0-100 pada baris ke-' . ($i + 1));
+				}
+
+				// Cek apakah data pertemuan tugas ada untuk siswa ini
+				$checkdata = $this->db->where('pertemuan_id', $pertemuan_id)
+					->where('siswa_id', $siswa_id)
+					->where('jadwal_kelas_id', $jadwal_id)
+					->get('tref_pertemuan_tugas')
+					->row_array();
+
+				if ($checkdata) {
+					// Update nilai jika data sudah ada
+					$update = $this->db->where('pertemuan_id', $pertemuan_id)
+						->where('siswa_id', $siswa_id)
+						->where('jadwal_kelas_id', $jadwal_id)
+						->update('tref_pertemuan_tugas', [
+							'nilai' => $nilai,
+							'updated_at' => date('Y-m-d H:i:s')
+						]);
+
+					if ($update) {
+						$updated_count++;
+					}
+				} else {
+					// Insert data baru jika belum ada
+					$insert = $this->db->insert('tref_pertemuan_tugas', [
+						'pertemuan_id' => $pertemuan_id,
+						'siswa_id' => $siswa_id,
+						'jadwal_kelas_id' => $jadwal_id,
+						'nilai' => $nilai,
+						'created_at' => date('Y-m-d H:i:s'),
+						'updated_at' => date('Y-m-d H:i:s')
+					]);
+
+					if ($insert) {
+						$updated_count++;
+					}
 				}
 			}
 
 			// Hapus file setelah import
 			@unlink($filePath);
-			success('Data berhasil diimport.');
+
+			if ($updated_count > 0) {
+				success('Data berhasil diimport. Total ' . $updated_count . ' nilai berhasil diupdate.');
+			} else {
+				error('Tidak ada data yang diimport. Pastikan file Excel berisi data yang valid.');
+			}
 		} catch (\Throwable $th) {
 			error('Error loading file: ' . $th->getMessage());
 		}

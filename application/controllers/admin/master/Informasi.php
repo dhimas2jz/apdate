@@ -50,7 +50,7 @@ class Informasi extends CI_Controller {
             	$btn_update = '<a href="'.$this->own_link.'/edit/'.$field->id.'" class="btn btn-info btn-sm btn-flat mb-2 mb-sm-0"><i class="fas fa-edit"></i></a>';
             // }
             // if ($user_access_detail[$this->menu_id]['is_delete'] == 1) {
-            	$btn_delete = '<a onclick="deleteConfirm(`'.$field->id.'`)" data-id="'.$field->id.'" href="javascript:void(0)" class="btn btn-danger btn-sm btn-flat delete"><i class="fas fa-trash"></i></a>';
+            	$btn_delete = '<a onclick="deleteConfirm(\''.$field->id.'\')" data-id="'.$field->id.'" href="javascript:void(0)" class="btn btn-danger btn-sm btn-flat delete"><i class="fas fa-trash"></i></a>';
             // }
             $action = $btn_update." ".$btn_delete;
             $row_menu[] = $action;
@@ -183,6 +183,9 @@ class Informasi extends CI_Controller {
 			$this->session->set_flashdata('success', "Delete data success");
 			return redirect($this->own_link);
 		}
+
+		$this->session->set_flashdata('error', "Delete data failed");
+		return redirect($this->own_link);
 	}
 
 	// CHANGE NECESSARY POINT

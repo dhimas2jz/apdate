@@ -34,12 +34,34 @@ class Lms extends CI_Controller {
 	public function lms_index($tingkat_kelas) {
 		$session = $this->session->userdata('user_dashboard');
 		$active_periode = active_periode();
-		$list_kelas = $this->Kelas_model->listKelasJadwalSemester($active_periode['id'], $tingkat_kelas);
+		$list_kelas = $this->Kelas_model->listKelasByTingkat($active_periode['periode_id'], $tingkat_kelas);
 		$data['judul'] = 'LMS';
-		$data['subjudul'] = 'List Kelas';
+		$data['subjudul'] = 'List Kelas ' . $tingkat_kelas;
 		$data['active_periode'] = $active_periode;
-		$data['list_kelas'] 		= $list_kelas;
-		$this->template->_v('lms/lms_index', $data);
+		$data['list_kelas'] = $list_kelas;
+		$data['tingkat_kelas'] = $tingkat_kelas;
+		$this->template->_v('lms/lms_kelas_index', $data);
+	}
+
+	public function kelas_mapel($kelas_id) {
+		$session = $this->session->userdata('user_dashboard');
+		$active_periode = active_periode();
+		$kelas = $this->Dbhelper->selectTabelOne('*', 'tref_kelas', array('id' => $kelas_id));
+		if (empty($kelas)) {
+			$this->session->set_flashdata('error', 'Kelas tidak ditemukan');
+			redirect('dashboard/lms');
+		}
+		$list_mapel = $this->Kelas_model->listKelasJadwalSemester($active_periode['id'], '');
+		// Filter hanya untuk kelas ini
+		$list_mapel = array_filter($list_mapel, function($item) use ($kelas_id) {
+			return $item['kelas_id'] == $kelas_id;
+		});
+		$data['judul'] = 'LMS';
+		$data['subjudul'] = 'Mata Pelajaran - Kelas ' . $kelas['kelas'];
+		$data['active_periode'] = $active_periode;
+		$data['kelas'] = $kelas;
+		$data['list_mapel'] = $list_mapel;
+		$this->template->_v('lms/lms_mapel_index', $data);
 	}
 
 	public function absensi($slug) {

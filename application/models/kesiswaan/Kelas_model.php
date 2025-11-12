@@ -308,6 +308,33 @@
 			";
 			$result = $this->db->query($query, [$semester_id, $kelas_id])->result_array();
 			return $result;
-		}
 	}
+
+	public function listKelasByTingkat($periode_id, $tingkat_kelas_code) {
+		$query = "
+			SELECT
+				a.*,
+				b.nip as guru_nip,
+				b.nama as guru_nama,
+				c.code as tingkat_kelas_code,
+				c.name as tingkat_kelas_name,
+				(SELECT COUNT(DISTINCT tjp.id)
+				 FROM tref_kelas_jadwal_pelajaran tjp
+				 WHERE tjp.kelas_id = a.id) as total_mapel,
+				(SELECT COUNT(DISTINCT tks.siswa_id)
+				 FROM tref_kelas_siswa tks
+				 WHERE tks.kelas_id = a.id AND tks.status = 'aktif') as total_siswa
+			FROM tref_kelas as a
+			INNER JOIN mt_users_guru as b ON a.guru_id = b.id
+			INNER JOIN mt_tingkat_kelas as c ON a.tingkat_kelas_id = c.id
+			WHERE
+				a.periode_id = ? AND
+				c.code = ?
+			ORDER BY
+				a.kelas ASC
+		";
+		$result = $this->db->query($query, [$periode_id, $tingkat_kelas_code])->result_array();
+		return $result;
+	}
+}
 ?>
