@@ -191,7 +191,9 @@
         <p class="sub-header">E. KETIDAKHADIRAN</p>
         <table style="width: 50%;"><tr><td>Sakit</td><td>: 1 hari</td></tr><tr><td>Izin</td><td>: 1 hari</td></tr><tr><td>Tanpa Keterangan</td><td>: 0 hari</td></tr></table>
         <p class="sub-header">F. CATATAN WALI KELAS</p>
-        <div style="border: 1px solid black; padding: 10px; min-height: 50px;"></div>
+        <div style="border: 1px solid black; padding: 10px; min-height: 50px;">
+            <?= !empty($rapor['catatan_wali_kelas']) ? nl2br(htmlspecialchars($rapor['catatan_wali_kelas'])) : '&nbsp;' ?>
+        </div>
         <p class="sub-header">G. TANGGAPAN ORANG TUA/WALI</p>
         <div style="border: 1px solid black; padding: 10px; min-height: 50px;"></div>
         <table class="signature-table">

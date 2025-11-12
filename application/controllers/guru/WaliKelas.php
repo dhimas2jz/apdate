@@ -360,6 +360,10 @@ class WaliKelas extends CI_Controller {
 		$kelas_id = $this->input->post('kelas_id');
 		$siswa_id = $this->input->post('siswa_id');
 		$is_close = $this->input->post('is_close');
+
+		// Debug: Log nilai is_close yang diterima
+		log_message('debug', 'E-Rapor Submit - is_close received: ' . $is_close . ' (type: ' . gettype($is_close) . ')');
+
 		if (empty($kelas_id) || empty($siswa_id)) {
 			error('Kelas atau Siswa tidak ditemukan.');
 		}
@@ -371,6 +375,7 @@ class WaliKelas extends CI_Controller {
 		$nilai 			=  $this->input->post('nilai');
 		$grade 			=  $this->input->post('grade');
 		$keterangan 	=  $this->input->post('keterangan');
+
 		foreach ($nilai as $i => $v) {
 			$slug = $mapel_code[$i].'-'.$guru_code[$i];
 			$as_data = [
@@ -381,10 +386,60 @@ class WaliKelas extends CI_Controller {
 				"keterangan"	=> $keterangan[$i]
 			];
 
+			$new_grade = $grade[$i];
+			$new_keterangan = $keterangan[$i];
+
 			if ($v != $nilai_old[$i]) {
 				$checkGrade = $this->Dbhelper->selectTabelOne('grade, keterangan', 'mt_grading', ['nilai_min <=' => $v, 'nilai_max >=' => $v]);
-				$as_data["grade"] = $checkGrade['grade'];
-				$as_data["keterangan"] = $checkGrade['keterangan'];
+				if (!empty($checkGrade)) {
+					$new_grade = $checkGrade['grade'];
+					$new_keterangan = $checkGrade['keterangan'];
+					$as_data["grade"] = $new_grade;
+					$as_data["keterangan"] = $new_keterangan;
+				}
+			}
+
+			// Update nilai_akhir di tr_egrading_siswa
+			// Cari jadwal_kelas_id berdasarkan mapel_code, guru_code, dan kelas_id
+			$jadwal = $this->db->select('tkjp.id as jadwal_id')
+				->from('tref_kelas_jadwal_pelajaran tkjp')
+				->join('mt_mata_pelajaran mmp', 'tkjp.mata_pelajaran_id = mmp.id')
+				->join('mt_users_guru mug', 'tkjp.guru_id = mug.id')
+				->where('tkjp.kelas_id', $kelas_id)
+				->where('mmp.code', $mapel_code[$i])
+				->where('mug.nip', $guru_code[$i])
+				->get()
+				->row_array();
+
+			if (!empty($jadwal)) {
+				$jadwal_id = $jadwal['jadwal_id'];
+
+				// Cek apakah sudah ada record di tr_egrading_siswa
+				$checkGrading = $this->db->where([
+					'siswa_id' => $siswa_id,
+					'jadwal_kelas_id' => $jadwal_id
+				])->get('tr_egrading_siswa')->row_array();
+
+				$grading_data = [
+					'nilai_akhir' => $v,
+					'grade' => $new_grade,
+					'keterangan' => $new_keterangan,
+					'updated_at' => date('Y-m-d H:i:s')
+				];
+
+				if (!empty($checkGrading)) {
+					// Update existing
+					$this->db->where([
+						'siswa_id' => $siswa_id,
+						'jadwal_kelas_id' => $jadwal_id
+					])->update('tr_egrading_siswa', $grading_data);
+				} else {
+					// Insert new
+					$grading_data['siswa_id'] = $siswa_id;
+					$grading_data['jadwal_kelas_id'] = $jadwal_id;
+					$grading_data['created_at'] = date('Y-m-d H:i:s');
+					$this->db->insert('tr_egrading_siswa', $grading_data);
+				}
 			}
 
 			$nilai_rapor[$slug] = $as_data;
@@ -398,11 +453,23 @@ class WaliKelas extends CI_Controller {
 		];
 
 		$json_nilai = json_encode($nilai_rapor);
+
+		// Get catatan wali kelas
+		$catatan_wali_kelas = $this->input->post('catatan_wali_kelas');
+
+		// Convert is_close to integer
+		$is_close_int = ($is_close === "1" || $is_close === 1) ? 1 : 0;
+
 		$in_data = [
 			"json_grading_akhir" 	=> $json_nilai,
-			"is_close"				=> $is_close == "true" ? 1 : 0,
+			"catatan_wali_kelas"	=> $catatan_wali_kelas,
+			"is_close"				=> $is_close_int,
 			"updated_at"			=> date("Y-m-d H:i:s")
 		];
+
+		// Debug: Log nilai is_close sebelum disimpan
+		log_message('debug', 'E-Rapor Submit - is_close akan disimpan: ' . $is_close_int);
+
 		$checkRapor = $this->Dbhelper->selectTabelOne('*', 'tr_rapor', $whereCondition);
 		if (!empty($checkRapor)) {
 			$save = $this->db->where($whereCondition)->update('tr_rapor', $in_data);
@@ -413,10 +480,53 @@ class WaliKelas extends CI_Controller {
 		}
 
 		if ($save) {
-			success('Rapor berhasil disimpan');
+			$status_text = $is_close_int == 1 ? 'Rapor berhasil di-generate (final)' : 'Nilai berhasil disimpan sementara (draft)';
+			success($status_text);
 		}
 
-		error('Data gagal didapatkan.');
+		error('Data gagal disimpan.');
+	}
+
+	public function erapor_update_detail() {
+		if ($this->input->server('REQUEST_METHOD') !== 'POST') {
+			badrequest('Method not allowed');
+		}
+
+		$session = $this->session->userdata('user_dashboard');
+		$active_periode = active_periode();
+
+		$periode_id = $this->input->post('periode_id');
+		$semester_id = $this->input->post('semester_id');
+		$kelas_id = $this->input->post('kelas_id');
+		$siswa_id = $this->input->post('siswa_id');
+
+		if (empty($kelas_id) || empty($siswa_id)) {
+			error('Kelas atau Siswa tidak ditemukan.');
+		}
+
+		// Get catatan wali kelas
+		$catatan_wali_kelas = $this->input->post('catatan_wali_kelas');
+
+		// Update catatan di rapor (tanpa mengubah nilai dan is_close)
+		$whereCondition = [
+			"siswa_id" 		=> $siswa_id,
+			"kelas_id"		=> $kelas_id,
+			"periode_id"	=> $periode_id,
+			"semester_id"	=> $semester_id
+		];
+
+		$update_data = [
+			"catatan_wali_kelas"	=> $catatan_wali_kelas,
+			"updated_at"			=> date("Y-m-d H:i:s")
+		];
+
+		$save = $this->db->where($whereCondition)->update('tr_rapor', $update_data);
+
+		if ($save) {
+			success('Catatan wali kelas berhasil diupdate');
+		}
+
+		error('Data gagal disimpan.');
 	}
 
 	public function erapor_pdf($rapor_id) {

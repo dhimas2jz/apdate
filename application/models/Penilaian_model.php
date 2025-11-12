@@ -79,21 +79,25 @@
 						) as nilai_tugas,
 						(
 							SELECT nilai
-							FROM tref_pertemuan_tugas sub_a 
+							FROM tref_pertemuan_tugas sub_a
 							INNER JOIN tref_pertemuan sub_b ON sub_a.pertemuan_id = sub_b.id
-							WHERE 
+							WHERE
 								sub_a.jadwal_kelas_id = c.id AND
 								sub_a.siswa_id = a.siswa_id AND
 								sub_b.pertemuan_ke = 'UTS'
+							ORDER BY sub_a.id DESC
+							LIMIT 1
 						) as nilai_uts,
 						(
 							SELECT nilai
-							FROM tref_pertemuan_tugas sub_a 
+							FROM tref_pertemuan_tugas sub_a
 							INNER JOIN tref_pertemuan sub_b ON sub_a.pertemuan_id = sub_b.id
-							WHERE 
+							WHERE
 								sub_a.jadwal_kelas_id = c.id AND
 								sub_a.siswa_id = a.siswa_id AND
 								sub_b.pertemuan_ke = 'UAS'
+							ORDER BY sub_a.id DESC
+							LIMIT 1
 						) as nilai_uas
 				FROM 
 						tref_kelas_siswa AS a

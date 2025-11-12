@@ -152,32 +152,67 @@
     });
   });
 
-  function editRapor() {
-    $(".nilai_akhir").attr('readonly', false);
-    $("#btn-edit-nilai").hide();
-    $("#btn-simpan-nilai").show();
-  }
-  
-  function generateRapor(close) {
+  function generateRapor() {
+    // Confirm dulu sebelum generate
+    if (!confirm('Apakah Anda yakin ingin menyimpan dan generate rapor? Setelah rapor di-generate, nilai tidak dapat diubah lagi.')) {
+      return;
+    }
+
     let formData = new FormData($("#frm-rapor")[0]);
-    formData.append("is_close", close);
+    // Selalu set is_close = 1 (generate rapor final)
+    formData.append("is_close", "1");
+
     fetch("<?= base_url('guru/wali-kelas/e-rapor/submit') ?>", {
         method: 'POST',
         body: formData
     })
-    .then(response => response.json()) // jika kamu kirim JSON, sesuaikan
+    .then(response => response.json())
     .then(data => {
       if (data.status) {
+        toastSuccess(data.message);
+        // Close modal dulu baru reload
+        $('#modalDetail').modal('hide');
         setTimeout(() => {
           window.location.reload();
         }, 500);
-        return toastSuccess(data.message);
+      } else {
+        toastError(data.message);
       }
-      return toastError(error.message);
     })
     .catch(error => {
         console.error('Gagal:', error);
-        return toastError(error.message);
+        toastError('Gagal menyimpan rapor!');
+    });
+  }
+
+  // Function untuk update catatan wali kelas (rapor sudah di-generate)
+  function updateCatatanWaliKelas() {
+    if (!confirm('Apakah Anda yakin ingin menyimpan perubahan Catatan Wali Kelas?')) {
+      return;
+    }
+
+    let formData = new FormData($("#frm-rapor")[0]);
+
+    fetch("<?= base_url('guru/wali-kelas/e-rapor/update-detail') ?>", {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status) {
+        toastSuccess(data.message);
+        // Close modal dulu baru reload
+        $('#modalDetail').modal('hide');
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
+      } else {
+        toastError(data.message);
+      }
+    })
+    .catch(error => {
+        console.error('Gagal:', error);
+        toastError('Gagal menyimpan perubahan!');
     });
   }
 </script>

@@ -214,6 +214,7 @@ $route['dashboard'] 								= 'admin/dashboard';
 	
 	$route['guru/wali-kelas/e-rapor'] 						= 'guru/WaliKelas/erapor';
 	$route['guru/wali-kelas/e-rapor/submit'] 				= 'guru/WaliKelas/erapor_submit';
+	$route['guru/wali-kelas/e-rapor/update-detail'] 		= 'guru/WaliKelas/erapor_update_detail';
 	$route['guru/wali-kelas/e-rapor/detail'] 				= 'guru/WaliKelas/erapor_detail';
 	$route['guru/wali-kelas/e-rapor/pdf/(:any)'] 			= 'guru/WaliKelas/erapor_pdf/$1';
 
